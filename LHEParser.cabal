@@ -1,0 +1,20 @@
+Name:		LHEParser
+Version:	0.0
+Synopsis:	Les Houches Event file parser
+Description: 	Les Houches Event file format parser
+License: 	BSD3
+License-file:	LICENSE
+Author:		Ian-Woo Kim
+Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
+Build-Depends:	base>4, monads-fd, bytestring, attoparsec, bytestring-lexing
+Build-Type: 	Simple
+
+hs-source-dirs: src
+ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+ghc-prof-options: -caf-all -auto-all
+
+
+Exposed-Modules: 
+		 HEP.Parser.LHEParser
+		 
+		 
