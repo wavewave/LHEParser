@@ -6,7 +6,8 @@ License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
-Build-Depends:	base>4, monads-fd, bytestring, attoparsec, bytestring-lexing, containers
+Build-Depends:	base>4, monads-fd, bytestring, attoparsec, bytestring-lexing, containers, iteratee < 0.4, 
+		ListLike
 Build-Type: 	Simple
 
 hs-source-dirs: src
@@ -16,5 +17,5 @@ ghc-prof-options: -caf-all -auto-all
 
 Exposed-Modules: 
 		 HEP.Parser.LHEParser
-		 
+		 HEP.Parser.LHEParser.Type 
 		 

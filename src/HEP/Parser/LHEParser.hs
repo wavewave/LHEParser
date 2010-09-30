@@ -1,6 +1,13 @@
 {-# LANGUAGE OverloadedStrings, BangPatterns #-}
 
-module HEP.Parser.LHEParser where
+module HEP.Parser.LHEParser (
+  module HEP.Parser.LHEParser.Type, 
+  leshouchevent, 
+--  iter_leshouchevent,
+  cnstrctIDMap
+  ) where
+
+import HEP.Parser.LHEParser.Type
 
 import Control.Applicative hiding (many) 
 
@@ -16,46 +23,16 @@ import Control.Monad.State
 import Debug.Trace
 
 import qualified Data.Map as M
+import qualified Data.Iteratee as Iter
+import qualified Data.ListLike as LL
 
-data LHEvent = LHEvent EventInfo [PtlInfo]
-               deriving Show
-
-type PtlID = Int 
-
-class IDable a  where 
-  idee :: a -> Int
-
+---- ID Map 
 
 cnstrctIDMap :: (IDable a) =>  [a] -> M.Map Int a
 cnstrctIDMap vs = foldr f M.empty vs
   where f v acc = M.insert (idee v) v acc
 
-instance IDable PtlInfo where
-  idee = ptlid
-  
-  
-  
-
-data EventInfo = EvInfo { 
-  nup    :: Int, 
-  idprup :: Int, 
-  xwgtup :: Double,
-  scalup :: Double, 
-  aqedup :: Double, 
-  aqcdup :: Double
-  } deriving Show
-
-data PtlInfo   = PtlInfo {
-  ptlid  :: PtlID, 
-  idup   :: Int, 
-  istup  :: Int,
-  mothup :: (Int,Int), 
-  icolup :: (Int,Int), 
-  pup    :: (Double, Double, Double, Double, Double), 
-  vtimup :: Double, 
-  spinup :: Double
-  } deriving Show
-
+---- parsers 
 
 skipSpaces :: Parser () 
 skipSpaces = P.satisfy isHorizontalSpace *> P.skipWhile isHorizontalSpace
@@ -109,23 +86,39 @@ initevent = withintag "<init>" "</init>" show
 
 eachevent = withintag "<event>" "</event>" getEvent
 
-leshouchevent :: Parser [Maybe LHEvent]
+leshouchevent :: Parser (Maybe [LHEvent])
 leshouchevent = do leshouches_starter
                    trim_starting_space
-                   h <- header
+                   header
                    trim_starting_space
-                   ini <- initevent 
+                   initevent 
                    trim_starting_space
                    r <- many1 (eachevent <* trim_starting_space)
-                   return r
+                   let r' = sequence r 
+                   return r'
+
+{-
+--- bold iteratee approach ----
+iter_leshouchevent :: (Monad m) => Parser (Iter.IterateeG [] (Maybe LHEvent) m a)                    
+iter_leshouchevent = do leshouches_starter
+                        trim_starting_space
+                        header
+                        trim_starting_space
+                        initevent 
+                        trim_starting_space
+                        r <- many1 (eachevent <* trim_starting_space)
+                        return (Iter.IterateeG step)
+  where step (Iter.Chunk xs) | LL.null xs = return $ Iter.Cont (Iter.IterateeG step) Nothing 
+--        step (Iter.Chunk xs) = return $ Iter.Cont (Iter.IterateeG . step $! undefined)
+        step str = undefined
+
+-}
+
 
 -------------------------------
 
-
-type EventReadMonadT = StateT (B.ByteString, PtlID) 
-
 getBStr :: (Monad m) => EventReadMonadT m B.ByteString
-getBStr = do (s,i) <- get 
+getBStr = do (s,_) <- get 
              return s 
           
 putBStr :: Monad m => B.ByteString -> EventReadMonadT m ()
@@ -133,7 +126,7 @@ putBStr s = do (_,i) <- get
                put (s,i)
 
 getID  :: Monad m => EventReadMonadT m Int
-getID = do (s,i) <- get 
+getID = do (_,i) <- get 
            return i
           
 putID  :: Monad m => Int -> EventReadMonadT m ()
@@ -248,6 +241,7 @@ readEvPtl = do nid <- getID
 untilM p f x | p x       = return x 
              | otherwise = f x >> untilM p f -}
 
+readEvWkr :: EventReadMonadT Maybe [PtlInfo]
 readEvWkr = do s <- getBStr 
                if B.null s  
                   then return [] 
