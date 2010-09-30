@@ -2,12 +2,14 @@
 
 module HEP.Parser.LHEParser (
   module HEP.Parser.LHEParser.Type, 
+  module HEP.Parser.LHEParser.DecayTop,
   leshouchevent, 
 --  iter_leshouchevent,
   cnstrctIDMap
   ) where
 
 import HEP.Parser.LHEParser.Type
+import HEP.Parser.LHEParser.DecayTop
 
 import Control.Applicative hiding (many) 
 
