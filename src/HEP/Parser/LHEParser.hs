@@ -15,8 +15,26 @@ import Control.Monad.State
 
 import Debug.Trace
 
+import qualified Data.Map as M
+
 data LHEvent = LHEvent EventInfo [PtlInfo]
                deriving Show
+
+type PtlID = Int 
+
+class IDable a  where 
+  idee :: a -> Int
+
+
+cnstrctIDMap :: (IDable a) =>  [a] -> M.Map Int a
+cnstrctIDMap vs = foldr f M.empty vs
+  where f v acc = M.insert (idee v) v acc
+
+instance IDable PtlInfo where
+  idee = ptlid
+  
+  
+  
 
 data EventInfo = EvInfo { 
   nup    :: Int, 
@@ -28,6 +46,7 @@ data EventInfo = EvInfo {
   } deriving Show
 
 data PtlInfo   = PtlInfo {
+  ptlid  :: PtlID, 
   idup   :: Int, 
   istup  :: Int,
   mothup :: (Int,Int), 
@@ -102,7 +121,29 @@ leshouchevent = do leshouches_starter
 
 -------------------------------
 
-type EventReadMonadT = StateT B.ByteString 
+
+type EventReadMonadT = StateT (B.ByteString, PtlID) 
+
+getBStr :: (Monad m) => EventReadMonadT m B.ByteString
+getBStr = do (s,i) <- get 
+             return s 
+          
+putBStr :: Monad m => B.ByteString -> EventReadMonadT m ()
+putBStr s = do (_,i) <- get 
+               put (s,i)
+
+getID  :: Monad m => EventReadMonadT m Int
+getID = do (s,i) <- get 
+           return i
+          
+putID  :: Monad m => Int -> EventReadMonadT m ()
+putID i = do (s,_) <- get
+             put (s,i)
+
+incID  :: Monad m => EventReadMonadT m () 
+incID = do i <- getID
+           putID (i+1)
+
 
 isWhite :: Char -> Bool 
 isWhite c = if c == ' ' || c == '\n' 
@@ -110,25 +151,25 @@ isWhite c = if c == ' ' || c == '\n'
             else False
 
 consume1 :: EventReadMonadT Maybe () 
-consume1 = do s <- get 
+consume1 = do s <- getBStr 
          --     trace ("hey " ++ show s) $ 
-              put (B.tail s)
+              putBStr (B.tail s)
 
 skipWhite :: EventReadMonadT Maybe () 
-skipWhite = do s <- get 
+skipWhite = do s <- getBStr 
                let s' = B.dropWhile isWhite s
-               put s'
+               putBStr s'
                
 readIntM :: EventReadMonadT Maybe Int  
-readIntM = do s <- get 
+readIntM = do s <- getBStr 
               (i,s') <- (lift . B.readInt) s
-              put s'
+              putBStr s'
               return i
 
 readDoubleM :: EventReadMonadT Maybe Double
-readDoubleM = do s <- get 
+readDoubleM = do s <- getBStr 
                  (r,s') <- (lift . readDouble) s
-                 put s' 
+                 putBStr s' 
                  if B.head s' == '.' 
                    then consume1 
                    else return ()  -- trace "not consumed" $ put s'
@@ -160,7 +201,9 @@ readEvCommon = do skipWhite
 
 
 readEvPtl :: EventReadMonadT Maybe PtlInfo
-readEvPtl = do idup'    <- readIntM
+readEvPtl = do nid <- getID
+    
+               idup'    <- readIntM
                skipWhite
                istup'   <- readIntM 
                skipWhite
@@ -188,7 +231,10 @@ readEvPtl = do idup'    <- readIntM
                spinup' <- readDoubleM
                skipWhite
              
+               incID
+               
                return PtlInfo { 
+                 ptlid  = nid,
                  idup   = idup'  , 
                  istup  = istup' ,
                  mothup = (mothup1',mothup2'), 
@@ -202,7 +248,7 @@ readEvPtl = do idup'    <- readIntM
 untilM p f x | p x       = return x 
              | otherwise = f x >> untilM p f -}
 
-readEvWkr = do s <- get 
+readEvWkr = do s <- getBStr 
                if B.null s  
                   then return [] 
                   else do x  <- readEvPtl 
@@ -217,6 +263,6 @@ readEvent = do evinfo   <- readEvCommon
              
 
 getEvent :: B.ByteString -> Maybe LHEvent
-getEvent bs = evalStateT readEvent bs
+getEvent bs = evalStateT readEvent (bs,1)
 
 
