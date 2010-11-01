@@ -4,6 +4,10 @@ import HEP.Parser.LHEParser.Type
 import qualified Data.Map as M
 import Data.List
 
+findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
+findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
+findonlyTerminal (Decay (x,xs)) ys = foldr findonlyTerminal ys xs 
+
 
 mkOrdDecayTop :: (Ord a) => DecayTop a -> DecayTop a 
 mkOrdDecayTop (Decay (x, xs)) = let ordchild = map mkOrdDecayTop xs

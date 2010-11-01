@@ -1,5 +1,5 @@
 Name:		LHEParser
-Version:	0.0
+Version:	0.0.1
 Synopsis:	Les Houches Event file parser
 Description: 	Les Houches Event file format parser
 License: 	BSD3
@@ -19,3 +19,5 @@ Exposed-Modules:
 		 HEP.Parser.LHEParser
 		 HEP.Parser.LHEParser.Type 
 		 HEP.Parser.LHEParser.DecayTop
+		 HEP.Parser.LHEParser.EventProcess
+		 HEP.Parser.LHEParser.Parser
