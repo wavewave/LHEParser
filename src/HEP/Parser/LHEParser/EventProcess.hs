@@ -26,3 +26,4 @@ eacheventM = do bstr <- get
 parseevents bstr = takeWhile isJust $
                      evalState (sequence (repeat eacheventM)) bstr
 
+

@@ -85,7 +85,10 @@ withintageach tag = try (string tag >> return B.empty )
 
 initevent = withintag "<init>" "</init>" show
 
+oneevent :: Parser (Maybe LHEvent) 
 oneevent = withintag "<event>" "</event>" getEvent
+
+eachevent :: Parser (Maybe LHEvent)
 eachevent = oneevent <* trim_starting_space
 
 
@@ -102,7 +105,21 @@ lheheader = do leshouches_starter
         --           let r' = length r -- sequence r 
         --           return r
 
+untilfirstevent :: Parser () 
+untilfirstevent = do skipWhile (/= '<')
+                     (try (string "<event>" >>  return ())
+                      <|> do char '<' 
+                             untilfirstevent)
+--                     try $ (string "<event>" >> return ())
+--                     <|> return "merong"
+--                     <|> do char '<'
+--                            skipWhile (/= '<')
+--                            return "merong"  
+--                            untilfirstevent
 
+
+
+-- char '<'
 
 -------------------------------
 
@@ -246,8 +263,14 @@ readEvent = do evinfo   <- readEvCommon
              
 
 getEvent :: B.ByteString -> Maybe LHEvent
-getEvent bs = evalStateT readEvent (bs,1)
+getEvent bs = let bs' = removeComment bs 
+              in  evalStateT readEvent (bs',1)
 
 
+removeComment :: B.ByteString -> B.ByteString 
+removeComment bstr = let bstrs = B.lines bstr
+                         notnullbstrs = filter (not. B.null) bstrs
+                         filtered = filter (\x->B.head x /= '#')  notnullbstrs
+                     in  B.unlines filtered 
   
   
