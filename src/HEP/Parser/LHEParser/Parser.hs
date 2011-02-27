@@ -10,6 +10,7 @@ import Control.Applicative hiding (many)
 
 import qualified Data.Attoparsec  as P
 import Data.Attoparsec.Char8 -- as P8 
+--import Data.Attoparsec.Internal
 --import qualified Data.ByteString as B hiding (map)
 
 
@@ -24,8 +25,15 @@ import Control.Monad.State
 import Debug.Trace
 
 import qualified Data.Map as M
-import qualified Data.Iteratee as Iter
-import qualified Data.ListLike as LL
+--import qualified Data.Iteratee as Iter
+--import qualified Data.ListLike as LL
+
+{-
+lookAhead :: Parser a -> Parser a 
+lookAhead p = Parser $ \st0 kf ks -> 
+              runParser p (noAdds st0) (kf . mappend st0) ks
+-}
+    
 
 ---- ID Map 
 
@@ -110,16 +118,7 @@ untilfirstevent = do skipWhile (/= '<')
                      (try (string "<event>" >>  return ())
                       <|> do char '<' 
                              untilfirstevent)
---                     try $ (string "<event>" >> return ())
---                     <|> return "merong"
---                     <|> do char '<'
---                            skipWhile (/= '<')
---                            return "merong"  
---                            untilfirstevent
 
-
-
--- char '<'
 
 -------------------------------
 
@@ -172,6 +171,7 @@ readDoubleM = do s <- getBStr
                  if B.head s' == '.' 
                    then consume1 
                    else return ()  -- trace "not consumed" $ put s'
+                 -- trace $ "r = " ++ (show r) $ 
                  return r
 
 readEvCommon :: EventReadMonadT Maybe EventInfo

@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 
 import Control.Applicative hiding (many) 
 
@@ -7,6 +8,19 @@ import Data.Attoparsec.Char8 -- as P8
 import qualified Data.ByteString.Char8 as B hiding (map) 
 
 import HEP.Parser.LHEParser
+
+import Debug.Trace
+
+
+import qualified Data.Iteratee as Iter
+import qualified Data.ListLike as LL 
+
+iter_parseoneevent :: Iter.Iteratee B.ByteString IO (Maybe LHEvent)
+iter_parseoneevent = Iter.Iteratee step 
+  where step = undefined 
+
+
+
 
 -------------------------------
 
@@ -20,38 +34,29 @@ main = do
   
   bytestr <- B.readFile "test.lhe"
 
-  let r = parse leshouchevent bytestr
+  let r = parse lheheader bytestr
       s = case r of 
-            Partial _  -> onlyresult (feed r B.empty)
-            Done _  _  -> onlyresult r
-            Fail _ _ _ -> onlyresult r 
+            Partial _  -> onlyremain (feed r B.empty)
+            Done _  _  -> onlyremain r
+            Fail _ _ _ -> trace "Test failed" $ onlyremain r 
   
-  putStrLn $ show s
+  putStrLn $ show $ B.take 100 s
 
+  let r' = parse eachevent s
+      s' = case r' of 
+            Partial _  -> onlyresult (feed r' B.empty)
+            Done _  _  -> onlyresult r'
+            Fail _ _ _ -> trace "Test failed" $ onlyresult r'
+            
+  putStrLn $ show s'
+  
+
+        
 onlyresult (Done _ r) = r
+onlyremain (Done s _) = s
   
 
 somestring (Fail a _ message ) = (Prelude.take 100 $ show $ B.take 100 a ) ++ " : " ++ message
 somestring (Done a b ) = (Prelude.take 100 $ show $ B.take 100 a ) ++ " : " ++ (Prelude.take 100  (show b))
   
 
-
-
---- SOME TEST CODE , I WILL ELIMINATE THIS SOON
-{-
-test1 = skipSpaces *> langle
-
-test2 :: Parser String
-test2 = trim_starting_space *> (langle *> (many1 . satisfy . inClass) "abcd" <* rangle) 
-
-h1 = do r <- header 
-        trim_starting_space
-        return r
-
-
-test = do leshouches_starter
-          trim_starting_space
-          string "<header>"
-          result <- headercontent 
-          return result
--}

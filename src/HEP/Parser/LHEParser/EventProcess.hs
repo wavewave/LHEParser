@@ -15,9 +15,13 @@ import Data.Maybe
 import Control.Monad.State.Lazy
 
 
+import qualified Data.Iteratee as Iter
+import qualified Data.ListLike as LL 
+
+
+
 eacheventM :: State B.ByteString (Maybe LHEvent)
 eacheventM = do bstr <- get
---                let Done bstr' result = 
                 case parse eachevent bstr of
                   Done bstr' result -> do put bstr'
                                           return result
@@ -25,5 +29,6 @@ eacheventM = do bstr <- get
 
 parseevents bstr = takeWhile isJust $
                      evalState (sequence (repeat eacheventM)) bstr
+
 
 
