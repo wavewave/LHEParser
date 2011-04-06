@@ -4,6 +4,8 @@ import HEP.Parser.LHEParser.Type
 import qualified Data.Map as M
 import Data.List
 
+test = putStrLn "dd"
+
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
 findonlyTerminal (Decay (x,xs)) ys = foldr findonlyTerminal ys xs 
