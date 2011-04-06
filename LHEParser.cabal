@@ -18,5 +18,6 @@ ghc-prof-options: -caf-all -auto-all
 Exposed-Modules: 
 		 HEP.Parser.LHEParser
 		 HEP.Parser.LHEParser.Type 
+		 HEP.Parser.LHEParser.DecayTop
 		 HEP.Parser.LHEParser.EventProcess
 		 HEP.Parser.LHEParser.Parser
