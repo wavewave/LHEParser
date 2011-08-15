@@ -5,35 +5,13 @@ module HEP.Parser.LHEParser.Parser where
 import HEP.Parser.LHEParser.Type
  
 import Control.Applicative hiding (many) 
-
-
-
-import qualified Data.Attoparsec  as P
-import Data.Attoparsec.Char8 -- as P8 
---import Data.Attoparsec.Internal
---import qualified Data.ByteString as B hiding (map)
-
-
-import qualified Data.ByteString.Char8 as B hiding (map) 
-
---import Text.Parsec
-
-import Data.ByteString.Lex.Double
-
 import Control.Monad.State
 
-import Debug.Trace
-
+import qualified Data.Attoparsec  as P
+import Data.Attoparsec.Char8 
+import qualified Data.ByteString.Char8 as B hiding (map) 
+import Data.ByteString.Lex.Double
 import qualified Data.Map as M
---import qualified Data.Iteratee as Iter
---import qualified Data.ListLike as LL
-
-{-
-lookAhead :: Parser a -> Parser a 
-lookAhead p = Parser $ \st0 kf ks -> 
-              runParser p (noAdds st0) (kf . mappend st0) ks
--}
-    
 
 ---- ID Map 
 
@@ -57,23 +35,26 @@ langle = char '<'
 rangle :: Parser Char 
 rangle = char '>'
 
+leshouches_starter :: Parser ()
 leshouches_starter = do string "<LesHouchesEvents" 
                         (many . satisfy . notInClass) ">"
                         char '>'
+                        return ()
                         
 
 mymaybeWhile :: Parser (Maybe a) -> Parser [a]
-mymaybeWhile oneelem = do x <- oneelem
-                          case x of 
-                            Just t -> do ts <- mymaybeWhile oneelem
-                                         return (t:ts)  
-                            Nothing-> return []
+mymaybeWhile p = do x <- p
+                    case x of 
+                      Just t -> do ts <- mymaybeWhile p 
+                                   return (t:ts)  
+                      Nothing-> return []
 
 header :: Parser String
 header = do string "<header>"  
             result <- headercontent
             return result
          
+oneelem :: Parser (Maybe [Char])
 oneelem = try (string "</header>" >> return Nothing) 
           <|> (many1 (notChar '<') >>= return.Just )
           <|> do a <- anyChar 
@@ -84,13 +65,13 @@ headercontent = mymaybeWhile oneelem >>= return . concat
   
 withintag :: B.ByteString -> B.ByteString -> (B.ByteString -> a) -> Parser a
 withintag stag etag f = string stag *> (f <$> withintageach etag ) <* string etag
---                           return (f result
 
+withintageach :: B.ByteString -> Parser B.ByteString
 withintageach tag = try (string tag >> return B.empty ) 
                     <|> (takeWhile1 (/= '<'))
 
 
-
+initevent :: Parser String
 initevent = withintag "<init>" "</init>" show
 
 oneevent :: Parser (Maybe LHEvent) 
@@ -100,7 +81,7 @@ eachevent :: Parser (Maybe LHEvent)
 eachevent = oneevent <* trim_starting_space
 
 
-lheheader :: Parser () -- Int --- (Maybe [LHEvent])
+lheheader :: Parser () 
 lheheader = do leshouches_starter
                trim_starting_space
                header
@@ -108,10 +89,6 @@ lheheader = do leshouches_starter
                initevent 
                trim_starting_space
                return ()
-               
-        --           r <- many1 (fromJust <$> eachevent <* trim_starting_space)
-        --           let r' = length r -- sequence r 
-        --           return r
 
 untilfirstevent :: Parser () 
 untilfirstevent = do skipWhile (/= '<')
@@ -150,7 +127,6 @@ isWhite c = if c == ' ' || c == '\n'
 
 consume1 :: EventReadMonadT Maybe () 
 consume1 = do s <- getBStr 
-         --     trace ("hey " ++ show s) $ 
               putBStr (B.tail s)
 
 skipWhite :: EventReadMonadT Maybe () 
@@ -170,8 +146,7 @@ readDoubleM = do s <- getBStr
                  putBStr s' 
                  if B.head s' == '.' 
                    then consume1 
-                   else return ()  -- trace "not consumed" $ put s'
-                 -- trace $ "r = " ++ (show r) $ 
+                   else return () 
                  return r
 
 readEvCommon :: EventReadMonadT Maybe EventInfo
@@ -243,9 +218,6 @@ readEvPtl = do nid <- getID
                  spinup = spinup'
                  }
 
-{-untilM :: (Monad m) => (a -> Bool) -> (a -> m a) -> a -> m a 
-untilM p f x | p x       = return x 
-             | otherwise = f x >> untilM p f -}
 
 readEvWkr :: EventReadMonadT Maybe [PtlInfo]
 readEvWkr = do s <- getBStr 

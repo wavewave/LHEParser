@@ -4,16 +4,14 @@ import HEP.Parser.LHEParser.Type
 import qualified Data.Map as M
 import Data.List
 
-test = putStrLn "dd"
-
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
-findonlyTerminal (Decay (x,xs)) ys = foldr findonlyTerminal ys xs 
+findonlyTerminal (Decay (_x,xs)) ys = foldr findonlyTerminal ys xs 
 
 
 mkOrdDecayTop :: (Ord a) => DecayTop a -> DecayTop a 
-mkOrdDecayTop (Decay (x, xs)) = let ordchild = map mkOrdDecayTop xs
-                                in  Decay (x, sort xs) 
+mkOrdDecayTop (Decay (x, xs)) = {- let ordchild = map mkOrdDecayTop xs in -}
+                                Decay (x, sort xs) 
 mkOrdDecayTop (Terminal x) = Terminal x
 
 
@@ -44,7 +42,7 @@ mkIntTree :: [PtlInfo] -> IntTree
 mkIntTree = foldr mkIntTreeWkr (IntTree (Cross [] []) M.empty)
 
 mkIntTreeWkr :: PtlInfo -> IntTree -> IntTree
-mkIntTreeWkr info tree@(IntTree cr dmap )  
+mkIntTreeWkr info (IntTree cr dmap)  
   | newm1 == 0 && newm2 == 0 = IntTree (Cross (newptlid : inptl) outptl) dmap
   | newm1 /= newm2           = IntTree (Cross inptl (newptlid : outptl)) dmap  
   | newm1 == newm2           = let ndmap = M.insertWith updtr newm1 [newptlid] dmap 
