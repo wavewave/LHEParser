@@ -1,5 +1,5 @@
 Name:		LHEParser
-Version:	0.1.999
+Version:	0.2.0.0
 Synopsis:	Les Houches Event file parser
 Description: 	Les Houches Event file format parser
 License: 	BSD3
@@ -7,7 +7,7 @@ License-file:	LICENSE
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
 Build-Depends:	base>4, mtl > 2, bytestring, attoparsec, bytestring-lexing, 
-                containers 
+                containers, text>0.11, xml-types>=0.3, enumerator
 Build-Type: 	Simple
 
 hs-source-dirs: src
@@ -21,3 +21,6 @@ Exposed-Modules:
 		 HEP.Parser.LHEParser.DecayTop
 		 HEP.Parser.LHEParser.EventProcess
 		 HEP.Parser.LHEParser.Parser
+                 HEP.Parser.LHEParser.Parser.Text
+                 HEP.Parser.LHEParser.Parser.Enumerator
+

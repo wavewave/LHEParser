@@ -4,6 +4,7 @@ import qualified Data.Map as M
 import qualified Data.ByteString as B
 import Control.Monad.State
 
+
 data LHEvent = LHEvent EventInfo [PtlInfo]
                deriving Show
 
@@ -35,7 +36,18 @@ data PtlInfo   = PtlInfo {
   spinup :: Double
   } deriving Show
 
+emptyPtlInfo :: PtlInfo
+emptyPtlInfo = PtlInfo { ptlid = 0
+                       , idup  = 0
+                       , istup = 0
+                       , mothup = (0,0)
+                       , icolup = (0,0)
+                       , pup = (0,0,0,0,0)
+                       , vtimup = 0
+                       , spinup = 0 }
+
 type EventReadMonadT = StateT (B.ByteString, PtlID) 
+
 
 
 type PDGID = Int 
@@ -81,6 +93,6 @@ instance Eq PtlIDInfo where
   (PIDInfo x1 _y1) == (PIDInfo x2 _y2) = x1 == x2 
 
 instance Ord PtlIDInfo where
-  compare (PIDInfo x1 y1) (PIDInfo x2 y2) = compare x1 x2
+  compare (PIDInfo x1 _y1) (PIDInfo x2 _y2) = compare x1 x2
 
 
