@@ -34,3 +34,6 @@ parseSingleEvent _ = Nothing
 
 parseSingleEventIter :: (Monad m) => Enumeratee [Event] (Maybe LHEvent) m a
 parseSingleEventIter = EL.map parseSingleEvent 
+
+parseEventIter :: (Monad m) => Iteratee (Maybe LHEvent) m a -> Iteratee Event m a 
+parseEventIter x = chunkAsLHEvent =$ EL.filter (not.null) =$ parseSingleEventIter =$ x
