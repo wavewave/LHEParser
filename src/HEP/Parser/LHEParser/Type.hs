@@ -25,6 +25,9 @@ data EventInfo = EvInfo {
   aqcdup :: Double
   } deriving Show
 
+
+-- | reference : http://lcgapp.cern.ch/project/docs/lhef5.pdf
+
 data PtlInfo   = PtlInfo {
   ptlid  :: PtlID, 
   idup   :: Int, 
