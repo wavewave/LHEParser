@@ -25,7 +25,6 @@ data EventInfo = EvInfo {
   aqcdup :: Double
   } deriving Show
 
-
 -- | reference : http://lcgapp.cern.ch/project/docs/lhef5.pdf
 
 data PtlInfo   = PtlInfo {
@@ -51,8 +50,6 @@ emptyPtlInfo = PtlInfo { ptlid = 0
 
 type EventReadMonadT = StateT (B.ByteString, PtlID) 
 
-
-
 type PDGID = Int 
 
 type PtlInfoMap = M.Map Int PtlInfo
@@ -62,6 +59,7 @@ data DecayTop a = Decay (a, [ DecayTop a ] )
                 deriving Eq
                                      
 type DecayMap = M.Map PtlID [PtlID]
+
 data Cross    = Cross {
   incoming :: [PtlID], 
   outgoing :: [PtlID]
@@ -70,7 +68,7 @@ data Cross    = Cross {
 data IntTree = IntTree {
   cross    ::  Cross,
   decaymap :: DecayMap 
-  } deriving (Show,Eq)
+} deriving (Show,Eq)
 
 data PtlIDInfo = PIDInfo {
   pdgid :: PDGID,  
@@ -80,7 +78,6 @@ data PtlIDInfo = PIDInfo {
 instance Functor (DecayTop) where
   fmap f (Decay (x, xs)) = Decay ((f x), map (fmap f) xs) 
   fmap f (Terminal x)    = Terminal (f x)
-
 
 instance (Show a) => Show (DecayTop a) where
   show (Decay (x, xs)) = "Decay " ++ show (x,xs)

@@ -25,7 +25,6 @@ mkDecayPDGTop :: PtlInfoMap -> DecayTop PtlID -> DecayTop PDGID
 mkDecayPDGTop pmap idtop = fmap f idtop  
   where f pid = let pinfo = maybe undefined id (M.lookup pid pmap)
                 in  idup pinfo
-  
 
 mkFullDecayTop :: IntTree -> [DecayTop PtlID] 
 mkFullDecayTop tree = let lst = outgoing (cross tree)
