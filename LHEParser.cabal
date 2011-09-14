@@ -6,30 +6,36 @@ License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
-Build-Depends:	base>4, mtl > 2, bytestring, attoparsec, bytestring-lexing, 
-                containers, text>0.11, xml-types>=0.3, enumerator
-Build-Type: 	Simple
+Build-Type:     Custom
+cabal-version:  >=1.6
+Extra-source-files: Config.hs
+                    fsrc/formatter.f
+                    csrc/formatter.h                   
+                    csrc/cformatter.h
+                    
 
-hs-source-dirs: src
-ghc-options: 	-Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
-ghc-prof-options: -caf-all -auto-all
 
 
-Exposed-Modules: 
-                  HEP.Parser.LHEParser
-                  HEP.Parser.LHEParser.Type 
-                  HEP.Parser.LHEParser.DecayTop
-                  HEP.Parser.LHEParser.EventProcess
-                  HEP.Parser.LHEParser.Parser
-                  HEP.Parser.LHEParser.Parser.Text
-                  HEP.Parser.LHEParser.Parser.Enumerator
-                  HEP.Parser.LHEParser.Formatter
-                  HEP.Parser.LHEParser.Formatter.Internal
 
-Include-dirs:     fsrc, csrc 
-Install-includes: formatter.h
-                  cformatter.h
-
-C-sources:        csrc/cformatter.c
+Library
+  hs-source-dirs: src
+  ghc-options:      -Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
+  ghc-prof-options: -caf-all -auto-all
+  Build-Depends:  base>4, mtl > 2, bytestring, attoparsec, bytestring-lexing, 
+                  containers, text>0.11, xml-types>=0.3, enumerator
+  Exposed-Modules: 
+                    HEP.Parser.LHEParser
+                    HEP.Parser.LHEParser.Type 
+                    HEP.Parser.LHEParser.DecayTop
+                    HEP.Parser.LHEParser.EventProcess
+                    HEP.Parser.LHEParser.Parser
+                    HEP.Parser.LHEParser.Parser.Text
+                    HEP.Parser.LHEParser.Parser.Enumerator
+                    HEP.Parser.LHEParser.Formatter
+                    HEP.Parser.LHEParser.Formatter.Internal
+  Include-dirs:     csrc 
+  Install-includes: formatter.h
+                    cformatter.h
+  C-sources:        csrc/cformatter.c
 
 -- fortran-sources:       fsrc/formatter.f
