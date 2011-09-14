@@ -37,5 +37,5 @@ Library
   Install-includes: formatter.h
                     cformatter.h
   C-sources:        csrc/cformatter.c
-
+  extra-libraries:  gfortran
 -- fortran-sources:       fsrc/formatter.f
