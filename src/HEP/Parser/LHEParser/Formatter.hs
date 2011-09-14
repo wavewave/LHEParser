@@ -4,14 +4,28 @@
 
 
 module HEP.Parser.LHEParser.Formatter ( 
-  printPtlInfo
-) where
+    printPtlInfo
+  , formatLHEvent
+  , formatEventInfo
+  , formatParticleInfo
+  ) where
 
 import Text.Printf
 
 import HEP.Parser.LHEParser.Type
+import HEP.Parser.LHEParser.Formatter.Internal
 
 import Control.Applicative 
+
+import Foreign.C
+-- import Foreign.Ptr
+
+import Foreign.Marshal.Array 
+
+import System.IO.Unsafe
+
+import Data.List
+
 
 px :: PtlInfo -> Double
 px pinfo = case pup pinfo of 
@@ -38,3 +52,59 @@ printPtlInfo pinfo =
   printf "    %5d %5d %5d %5d %5d %5d %1.10E %18.11e %18.11E %18.11E %18.11E %f %f" 
   <$> idup <*> istup <*> fst.mothup <*> snd.mothup <*> fst.icolup <*> snd.icolup 
   <*> px <*> py <*> pz <*> p0 <*> mass <*> vtimup <*> spinup $ pinfo
+
+formatLHEvent :: LHEvent -> String 
+formatLHEvent (LHEvent einfo pinfos) = 
+  let estr = formatEventInfo einfo
+      pstrs = map formatParticleInfo pinfos
+  in  intercalate "\n" (estr:pstrs)
+
+formatEventInfo :: EventInfo -> String 
+formatEventInfo einfo =
+  let cstr = c_formatEventInfo <$> fromIntegral.nup
+                               <*> fromIntegral.idprup
+                               <*> realToFrac.xwgtup
+                               <*> realToFrac.scalup
+                               <*> realToFrac.aqedup
+                               <*> realToFrac.aqcdup $ einfo
+  in  unsafePerformIO $ peekCString cstr
+  
+
+formatParticleInfo :: PtlInfo -> String 
+formatParticleInfo pinfo = 
+  let tuple2lst (a,b) = [a,b]
+      tuple5lst (a,b,c,d,e) = [a,b,c,d,e] 
+      lstToCPtr f = unsafePerformIO . newArray . (map f) 
+      cstr = c_formatParticleInfo 
+             <$> fromIntegral.idup
+             <*> fromIntegral.istup
+             <*> lstToCPtr fromIntegral . tuple2lst . mothup
+             <*> lstToCPtr fromIntegral . tuple2lst . icolup
+             <*> lstToCPtr realToFrac . tuple5lst . pup
+             <*> realToFrac . vtimup
+             <*> realToFrac . spinup 
+             $ pinfo
+  in  unsafePerformIO $ peekCString cstr
+
+
+{-
+main :: IO ()
+main = do 
+  putStrLn "haha"
+  putStrLn $ formatEventInfo $ EvInfo 2 2 4 4 4 4  
+  putStrLn $ formatParticleInfo $ PtlInfo 1 8 32 (3,0) (4,4) (3.2,233.3,1010.0,0.332,0.0003) 2.0 1.0
+{-  let lst1 = unsafePerformIO $ newArray (map fromIntegral [3,0])
+      lst2 = unsafePerformIO $ newArray (map fromIntegral [4,4])
+      lst3 = unsafePerformIO $ newArray (map realToFrac [3.2,233.3,1010.0,0.332,0.0003])
+
+  let cstr2 = c_formatParticleInfo (fromIntegral (8::Int)) 
+                                   (fromIntegral (32::Int))
+                                   lst1
+                                   lst2
+                                   lst3 
+                                   (realToFrac (2.0::Double))
+                                   (realToFrac (1.0::Double))
+      str2 = unsafePerformIO $ peekCString cstr2
+  putStrLn $ str2 -}
+
+  -}

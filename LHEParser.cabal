@@ -16,14 +16,20 @@ ghc-prof-options: -caf-all -auto-all
 
 
 Exposed-Modules: 
-		 HEP.Parser.LHEParser
-		 HEP.Parser.LHEParser.Type 
-		 HEP.Parser.LHEParser.DecayTop
-		 HEP.Parser.LHEParser.EventProcess
-		 HEP.Parser.LHEParser.Parser
-                 HEP.Parser.LHEParser.Parser.Text
-                 HEP.Parser.LHEParser.Parser.Enumerator
-                 HEP.Parser.LHEParser.Formatter
+                  HEP.Parser.LHEParser
+                  HEP.Parser.LHEParser.Type 
+                  HEP.Parser.LHEParser.DecayTop
+                  HEP.Parser.LHEParser.EventProcess
+                  HEP.Parser.LHEParser.Parser
+                  HEP.Parser.LHEParser.Parser.Text
+                  HEP.Parser.LHEParser.Parser.Enumerator
+                  HEP.Parser.LHEParser.Formatter
+                  HEP.Parser.LHEParser.Formatter.Internal
 
-Include-dirs:    fsrc
-fortran-sources:       fsrc/formatter.f
+Include-dirs:     fsrc, csrc 
+Install-includes: formatter.h
+                  cformatter.h
+
+C-sources:        csrc/cformatter.c
+
+-- fortran-sources:       fsrc/formatter.f
