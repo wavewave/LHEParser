@@ -2,6 +2,7 @@
 
 module Config where
 
+import Data.List 
 
 import Distribution.Simple
 import Distribution.Simple.BuildPaths
@@ -21,10 +22,12 @@ import System.Directory
 import System.Info
 
 
+
+
 fortranCompileHook :: UserHooks
 fortranCompileHook = simpleUserHooks { 
-    confHook = hookfunction
-  , instHook = hook4InstHook
+  confHook = hookfunction, 
+  instHook = hook4InstHook
 } 
 
 hook4InstHook :: PackageDescription -> LocalBuildInfo -> UserHooks -> InstallFlags -> IO () 
@@ -38,34 +41,66 @@ hook4InstHook pkg_descr lbi uhook flags = do
       copydest = fromFlag (copyDest (copyFlags))
       libPref = libdir . absoluteInstallDirs pkg_descr lbi $ copydest
   tdir <- getTemporaryDirectory
-  let command = "mv " ++ (tdir </> "libfformatter.a") ++" " ++ (tdir </> "libfformatter.dylib") ++ " " ++  libPref 
+  let fortranfiles = filter (\x->takeExtension x == ".f") (extraSrcFiles pkg_descr)
+--   mkFortran tdir libPref fortranfiles
+
+
+  let command = "mv " ++ (tdir </> "libfformatter.a") ++ " " ++ libPref 
   putStrLn command
   system command
-  return () 
 
-mkFortran :: FilePath -> FilePath -> IO () 
-mkFortran dir file = do 
-  let fn = dropExtension (takeFileName file)
-  putStrLn $ "filename : " ++ fn 
+{-
+" " ++ (libPref  </> "libfformatter.dylib") ++ " " ++  libPref   
   let objfile = dir </> fn ++ ".o"
-  let command = "gfortran -m64 -o " ++ objfile ++ " -c " ++ file
-  putStrLn $ "run fortran: " ++  command  
-  system command 
+  return ()  -}
+
+  let objfile file = 
+        let fn = dropExtension (takeFileName file)
+        in  tdir </> fn ++ ".o"
+
+  let objfiles = map objfile fortranfiles 
+      ofileargs = intercalate " " objfiles
+
   let libfilename = "libfformatter.a"
       dylibfilename = "libfformatter.dylib"
       sofilename = "libfformatter.so"
-  let command2 = "ar cr " ++ (dir </> libfilename) ++ " " ++ objfile
-  putStrLn $ "run ar: " ++ command2 
-  system command2  
+
   putStrLn $ "make shared object"
   putStrLn $ os   
   let command3 = case buildOS of 
-        OSX -> "gcc -dynamiclib -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0 -o " ++ (dir </> dylibfilename) ++ " " ++ objfile 
-        Linux -> "gcc -shared -Wl,-soname,libfformatter.so -o " ++ (dir </> sofilename) ++ " " ++ objfile
+        OSX -> "gcc -dynamiclib -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0 -o " ++ (libPref </> dylibfilename) ++ " " ++ ofileargs
+        Linux -> "gcc -shared -Wl,-soname,libfformatter.so -o " ++ (libPref </> sofilename) ++ " " ++ ofileargs
         _ -> error "cannot handle this OS" 
+  putStrLn $ command3 
   system command3
   return () 
 
+
+
+mkFortran :: FilePath -> [FilePath] -> IO () 
+mkFortran tdir files = do 
+
+  -- compilation
+
+  let objfile file = 
+        let fn = dropExtension (takeFileName file)
+        in  tdir </> fn ++ ".o"
+  let compile file = do
+        let command = "gfortran -m64 -o " ++ objfile file ++ " -c " ++ file
+        putStrLn $ "run fortran: " ++  command  
+        system command 
+  mapM_ compile files 
+
+  -- linking 
+  let libfilename = "libfformatter.a"
+  let objfiles = map objfile files 
+      ofileargs = intercalate " " objfiles
+  let command2 = "ar cr " ++ (tdir </> libfilename) ++ " " ++ ofileargs
+  putStrLn $ "run ar: " ++ command2 
+  system command2  
+  return ()
+
+{-
 hook4Build  pkg_descr lbi uhook bf = do 
   let Just lib = library pkg_descr
       libBi = libBuildInfo lib
@@ -75,6 +110,8 @@ hook4Build  pkg_descr lbi uhook bf = do
       new_lib = lib { libBuildInfo = new_libBi } 
       new_pkg_descr = pkg_descr { library = Just new_lib } 
   buildHook simpleUserHooks new_pkg_descr lbi uhook bf
+-}
+
 
 hookfunction x y = do 
   binfo <- confHook simpleUserHooks x y 
@@ -84,7 +121,7 @@ hookfunction x y = do
   let fortranfiles = filter (\x->takeExtension x == ".f") (extraSrcFiles pkg_descr)
   putStrLn $ show tdir
   putStrLn $ show fortranfiles  
-  mapM_ (mkFortran tdir) fortranfiles 
+  mkFortran  tdir fortranfiles 
   r_pbi <- config binfo
   let newbinfo = case r_pbi of 
                    Just pbi ->  binfo { localPkgDescr = updatePackageDescription pbi pkg_descr }
@@ -107,7 +144,7 @@ config bInfo = do
   let hbi = emptyBuildInfo { extraLibs = extraLibs buildinfo 
                                          ++ ["fformatter"]
                                                -- ++ libs liboptset
-                           , extraLibDirs = [tdir] -- libdirs liboptset 
+                           , extraLibDirs = [tdir]  -- libdirs liboptset 
                            -- , includeDirs = {- incdir : -} includeDirs buildinfo
                            }
   let (r :: Maybe HookedBuildInfo) = Just (Just hbi, []) 
