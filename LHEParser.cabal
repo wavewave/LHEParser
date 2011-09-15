@@ -9,7 +9,7 @@ Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
 Build-Type:     Custom
 cabal-version:  >=1.6
 Extra-source-files: Config.hs
-                    fsrc/formatter.f
+                    fsrc/fformatter.f
                     csrc/formatter.h                   
                     csrc/cformatter.h
                     
@@ -22,7 +22,8 @@ Library
   ghc-options:      -Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
   Build-Depends:  base>4, mtl > 2, bytestring, attoparsec, bytestring-lexing, 
-                  containers, text>0.11, xml-types>=0.3, enumerator
+                  containers, text>0.11, xml-types>=0.3, enumerator, xml-enumerator < 0.4, 
+                  transformers>0.2.2
   Exposed-Modules: 
                     HEP.Parser.LHEParser
                     HEP.Parser.LHEParser.Type 
@@ -34,7 +35,7 @@ Library
                     HEP.Parser.LHEParser.Formatter
                     HEP.Parser.LHEParser.Formatter.Internal
   Include-dirs:     csrc 
-  Install-includes: formatter.h
+  Install-includes: fformatter.h
                     cformatter.h
   C-sources:        csrc/cformatter.c
   extra-libraries:  gfortran
