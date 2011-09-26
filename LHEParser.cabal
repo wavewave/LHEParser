@@ -19,7 +19,7 @@ Library
   ghc-prof-options: -caf-all -auto-all
   Build-Depends:  base>4, mtl > 2, bytestring, attoparsec, bytestring-lexing, 
                   containers, text>0.11, xml-types>=0.3, enumerator, xml-enumerator < 0.4, 
-                  transformers>0.2.2
+                  transformers>0.2.2, HEPUtil
   Exposed-Modules: 
                     HEP.Parser.LHEParser
                     HEP.Parser.LHEParser.Type 

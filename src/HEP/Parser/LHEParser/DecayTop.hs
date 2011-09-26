@@ -3,6 +3,9 @@ module HEP.Parser.LHEParser.DecayTop where
 import HEP.Parser.LHEParser.Type
 import qualified Data.Map as M
 import Data.List
+import Control.Monad
+import HEP.Util.Functions
+
 
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
@@ -51,3 +54,24 @@ mkIntTreeWkr info (IntTree cr dmap)
         newptlid = ptlid info  
         (newm1,newm2) = mothup info
         updtr ns os = ns ++ os 
+
+
+matchDecayTopAndGet4Momentum :: DecayTop PDGID -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
+matchDecayTopAndGet4Momentum (Terminal pid) (Terminal pinfo) 
+  | pid == pdgid pinfo = Just . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
+  | otherwise = Nothing
+matchDecayTopAndGet4Momentum (Decay (pid,xs)) (Decay (pinfo,ys)) 
+  | pid == pdgid pinfo = do zs <- zipWithM matchDecayTopAndGet4Momentum xs ys 
+                            return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
+  | otherwise = Nothing
+matchDecayTopAndGet4Momentum _ _ = Nothing 
+
+matchDecayTopGroupAndGet4Momentum :: DecayTop [PDGID] -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
+matchDecayTopGroupAndGet4Momentum (Terminal pids) (Terminal pinfo) =
+  if (pdgid pinfo `elem` pids) then Just . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
+                               else Nothing
+matchDecayTopGroupAndGet4Momentum (Decay (pids,xs)) (Decay (pinfo,ys)) = 
+  if (pdgid pinfo `elem` pids) then do zs <- zipWithM matchDecayTopGroupAndGet4Momentum xs ys 
+                                       return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
+                               else Nothing
+matchDecayTopGroupAndGet4Momentum _ _ = Nothing 

@@ -3,6 +3,7 @@ module HEP.Parser.LHEParser.Type where
 import qualified Data.Map as M
 import qualified Data.ByteString as B
 import Control.Monad.State
+import HEP.Util.Functions
 
 
 data LHEvent = LHEvent EventInfo [PtlInfo]
@@ -101,3 +102,5 @@ instance Ord PtlIDInfo where
   compare (PIDInfo x1 _y1) (PIDInfo x2 _y2) = compare x1 x2
 
 
+pupTo4mom :: (Double,Double,Double,Double,Double) -> FourMomentum 
+pupTo4mom (px,py,pz,e,m) = (e,px,py,pz)
