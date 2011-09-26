@@ -10,8 +10,7 @@ findonlyTerminal (Decay (_x,xs)) ys = foldr findonlyTerminal ys xs
 
 
 mkOrdDecayTop :: (Ord a) => DecayTop a -> DecayTop a 
-mkOrdDecayTop (Decay (x, xs)) = {- let ordchild = map mkOrdDecayTop xs in -}
-                                Decay (x, sort xs) 
+mkOrdDecayTop (Decay (x, xs)) = Decay (x, map (mkOrdDecayTop) (sort xs)) 
 mkOrdDecayTop (Terminal x) = Terminal x
 
 
