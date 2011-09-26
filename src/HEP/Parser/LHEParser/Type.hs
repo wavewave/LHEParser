@@ -85,9 +85,14 @@ instance (Show a) => Show (DecayTop a) where
 
 
 instance (Ord a) => Ord (DecayTop a) where
-  compare (Decay (x,_xs)) (Decay (y,_ys)) = compare x y 
+  compare (Decay (x,xs)) (Decay (y,ys)) = case compare x y of 
+                                            GT -> GT
+                                            LT -> LT
+                                            EQ -> compare xs ys
+  compare (Terminal _) (Decay _) = LT
+  compare (Decay _) (Terminal) = GT
   compare (Terminal x) (Terminal y) = compare x y
-  compare _ _ = undefined 
+  -- compare _ _ = undefined 
 
 instance Eq PtlIDInfo where
   (PIDInfo x1 _y1) == (PIDInfo x2 _y2) = x1 == x2 
