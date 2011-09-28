@@ -103,4 +103,4 @@ instance Ord PtlIDInfo where
 
 
 pupTo4mom :: (Double,Double,Double,Double,Double) -> FourMomentum 
-pupTo4mom (px,py,pz,e,m) = (e,px,py,pz)
+pupTo4mom (x,y,z,e,_m) = (e,x,y,z)

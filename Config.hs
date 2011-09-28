@@ -21,9 +21,6 @@ import System.Directory
 
 import System.Info
 
-
-
-
 fortranCompileHook :: UserHooks
 fortranCompileHook = simpleUserHooks { 
   confHook = hookfunction, 
@@ -42,17 +39,9 @@ hook4InstHook pkg_descr lbi uhook flags = do
       libPref = libdir . absoluteInstallDirs pkg_descr lbi $ copydest
   tdir <- getTemporaryDirectory
   let fortranfiles = filter (\x->takeExtension x == ".f") (extraSrcFiles pkg_descr)
---   mkFortran tdir libPref fortranfiles
-
-
   let command = "mv " ++ (tdir </> "libfformatter.a") ++ " " ++ libPref 
   putStrLn command
   system command
-
-{-
-" " ++ (libPref  </> "libfformatter.dylib") ++ " " ++  libPref   
-  let objfile = dir </> fn ++ ".o"
-  return ()  -}
 
   let objfile file = 
         let fn = dropExtension (takeFileName file)
@@ -75,13 +64,9 @@ hook4InstHook pkg_descr lbi uhook flags = do
   system command3
   return () 
 
-
-
 mkFortran :: FilePath -> [FilePath] -> IO () 
 mkFortran tdir files = do 
-
   -- compilation
-
   let objfile file = 
         let fn = dropExtension (takeFileName file)
         in  tdir </> fn ++ ".o"
@@ -100,24 +85,10 @@ mkFortran tdir files = do
   system command2  
   return ()
 
-{-
-hook4Build  pkg_descr lbi uhook bf = do 
-  let Just lib = library pkg_descr
-      libBi = libBuildInfo lib
-      cSrcs = cSources libBi
-      new_cSrcs = cSrcs ++ ["fformatter.c"]
-      new_libBi = libBi { cSources = new_cSrcs } 
-      new_lib = lib { libBuildInfo = new_libBi } 
-      new_pkg_descr = pkg_descr { library = Just new_lib } 
-  buildHook simpleUserHooks new_pkg_descr lbi uhook bf
--}
-
-
 hookfunction x y = do 
   binfo <- confHook simpleUserHooks x y 
   let pkg_descr = localPkgDescr binfo
   tdir <- getTemporaryDirectory
-  -- autogenModulesDir binfo
   let fortranfiles = filter (\x->takeExtension x == ".f") (extraSrcFiles pkg_descr)
   putStrLn $ show tdir
   putStrLn $ show fortranfiles  
@@ -133,7 +104,6 @@ hookfunction x y = do
                              newlib = lib { libBuildInfo = binfo2 { cSources = [] }}  
                          in  binfo { localPkgDescr = pkg_descr { library = Just newlib }}  
                        Nothing -> error "some library setting is wrong." 
---   putStrLn (show (localPkgDescr newbinfo))
   return newbinfo
 
 config :: LocalBuildInfo -> IO (Maybe HookedBuildInfo)
@@ -143,10 +113,8 @@ config bInfo = do
       buildinfo = libBuildInfo lib
   let hbi = emptyBuildInfo { extraLibs = extraLibs buildinfo 
                                          ++ ["fformatter"]
-                                               -- ++ libs liboptset
-                           , extraLibDirs = [tdir]  -- libdirs liboptset 
-                           -- , includeDirs = {- incdir : -} includeDirs buildinfo
+                           , extraLibDirs = [tdir]  
                            }
   let (r :: Maybe HookedBuildInfo) = Just (Just hbi, []) 
-  putStrLn $ show hbi
+  --  putStrLn $ show hbi
   return r 

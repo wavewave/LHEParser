@@ -2,9 +2,12 @@ module HEP.Parser.LHEParser.DecayTop where
 
 import HEP.Parser.LHEParser.Type
 import qualified Data.Map as M
-import Data.List
+import Data.List hiding (map)
 import Control.Monad
 import HEP.Util.Functions
+
+import Data.Enumerator hiding (map)
+import qualified Data.Enumerator.List as EL
 
 
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
@@ -75,3 +78,14 @@ matchDecayTopGroupAndGet4Momentum (Decay (pids,xs)) (Decay (pinfo,ys)) =
                                        return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
                                else Nothing
 matchDecayTopGroupAndGet4Momentum _ _ = Nothing 
+
+getDecayTop :: LHEvent -> (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])
+getDecayTop ev@(LHEvent _einfo pinfos) = 
+  let pmap = M.fromList (Prelude.map (\x->(idee x,x)) pinfos)
+      dtops = mkFullDecayTop (mkIntTree pinfos)
+      ptlidinfotop = fmap (mkDecayPDGExtTop pmap) dtops 
+  in  (ev,pmap,ptlidinfotop)
+  
+decayTopEnee :: (Monad m) => Enumeratee (Maybe LHEvent) (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])) m a
+decayTopEnee = EL.map (fmap getDecayTop)  
+
