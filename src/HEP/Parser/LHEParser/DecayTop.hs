@@ -89,3 +89,11 @@ getDecayTop ev@(LHEvent _einfo pinfos) =
 decayTopEnee :: (Monad m) => Enumeratee (Maybe LHEvent) (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])) m a
 decayTopEnee = EL.map (fmap getDecayTop)  
 
+
+-- | make ordered decay topology from unordered decaytop
+ordDecayTopEnee :: Monad m => 
+                   Enumeratee (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]))
+                              (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]))
+                              m a
+ordDecayTopEnee = EL.map (fmap f)
+  where f (a,b,cs) = (a,b,Prelude.map mkOrdDecayTop cs)
