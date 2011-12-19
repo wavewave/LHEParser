@@ -4,7 +4,7 @@ module HEP.Parser.LHEParser.Parser where
 
 import HEP.Parser.LHEParser.Type
  
-import Control.Applicative hiding (many) 
+import Control.Applicative
 import Control.Monad.State
 
 import qualified Data.Attoparsec  as P

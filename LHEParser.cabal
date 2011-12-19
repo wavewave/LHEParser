@@ -1,5 +1,5 @@
 Name:		LHEParser
-Version:	0.2.3
+Version:	0.2.3.1
 Synopsis:	Les Houches Event file parser
 Description: 	Les Houches Event file format parser
 License: 	BSD3
@@ -17,10 +17,14 @@ Library
   hs-source-dirs: src
   ghc-options:      -Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
-  Build-Depends:  base>4, mtl > 2, bytestring, attoparsec, bytestring-lexing, 
-                  containers, text>0.11, xml-types>=0.3, enumerator, 
-                  xml-enumerator < 0.4, 
-                  transformers>0.2.2, HEPUtil>=0.1.2, enumerator-util >=0.1.1
+  Build-Depends:  base>4, mtl > 2, bytestring, 
+                  attoparsec == 0.10.*, 
+                  bytestring-lexing, 
+                  containers, text == 0.11.*, 
+                  xml-types>=0.3, 
+                  enumerator == 0.4.*, 
+                  xml-enumerator == 0.4.*, 
+                  transformers>0.2.2, HEPUtil>=0.1.2, enumerator-util >=0.1.1.1
   Exposed-Modules: 
                     HEP.Parser.LHEParser
                     HEP.Parser.LHEParser.Type 

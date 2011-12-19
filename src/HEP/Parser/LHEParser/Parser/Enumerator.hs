@@ -12,7 +12,7 @@ import qualified Data.Text as T
 import HEP.Parser.LHEParser.Type
 import HEP.Parser.LHEParser.Parser.Text
 
-import Text.XML.Enumerator.Render
+import Text.XML.Stream.Render
 
 isEventStart :: Event -> Bool 
 isEventStart (EventBeginElement name _) = nameLocalName name == "event" 
@@ -52,5 +52,5 @@ parseLHEHeader = do
 textLHEHeader :: (MonadIO m) => Iteratee Event m [T.Text]
 textLHEHeader = do 
   headevs <- parseLHEHeader 
-  run_ $ E.enumList 1 headevs $$ renderText =$ EL.consume
+  run_ $ E.enumList 1 headevs $$ renderText def =$ EL.consume
 
