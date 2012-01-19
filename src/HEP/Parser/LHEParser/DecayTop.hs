@@ -11,6 +11,10 @@ import qualified Data.Enumerator.List as EL
 
 import Debug.Trace
 
+-- | shorthand
+
+type DecayTopIteratee a b m = Iteratee (Maybe (a,b,[DecayTop PtlIDInfo])) m 
+
 
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
@@ -95,7 +99,7 @@ getDecayTop ev@(LHEvent _einfo pinfos) =
   let pmap = M.fromList (Prelude.map (\x->(idee x,x)) pinfos)
       dtops = mkFullDecayTop (mkIntTree pinfos)
       ptlidinfotop = fmap (mkDecayPDGExtTop pmap) dtops 
-  in  trace ("mkIntTree pinfos = " ++ show (mkIntTree pinfos)) $ (ev,pmap,ptlidinfotop)
+  in  (ev,pmap,ptlidinfotop)
   
 decayTopEnee :: (Monad m) => Enumeratee (Maybe LHEvent) (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])) m a
 decayTopEnee = EL.map (fmap getDecayTop)  
