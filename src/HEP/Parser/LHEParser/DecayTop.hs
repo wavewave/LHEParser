@@ -9,6 +9,8 @@ import HEP.Util.Functions
 import Data.Enumerator hiding (map)
 import qualified Data.Enumerator.List as EL
 
+import Debug.Trace
+
 
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
@@ -45,16 +47,25 @@ mkDecayTop dmap pid = let dlist = (M.lookup pid dmap)
 mkIntTree :: [PtlInfo] -> IntTree
 mkIntTree = foldr mkIntTreeWkr (IntTree (Cross [] []) M.empty)
 
+-- | this is not correct. only for madevent/pythia generated lhe file 
+
 mkIntTreeWkr :: PtlInfo -> IntTree -> IntTree
 mkIntTreeWkr info (IntTree cr dmap)  
+  | st == (-1) = IntTree (Cross (newptlid : inptl) outptl) dmap 
+  | st /= (-1) && newm1 `elem` [0,1,2] && newm2 `elem` [0,1,2] = IntTree (Cross inptl (newptlid:outptl)) dmap 
+  | st /= (-1) && newm1 /= newm2 = IntTree (Cross inptl (newptlid : outptl)) dmap 
+  | st /= (-1) && newm1 == newm2 = let ndmap = M.insertWith updtr newm1 [newptlid] dmap
+                                   in IntTree cr ndmap 
+{-
   | newm1 == 0 && newm2 == 0 = IntTree (Cross (newptlid : inptl) outptl) dmap
   | newm1 /= newm2           = IntTree (Cross inptl (newptlid : outptl)) dmap  
   | newm1 == newm2           = let ndmap = M.insertWith updtr newm1 [newptlid] dmap 
                                in IntTree cr ndmap
-  | otherwise   = undefined
+  | otherwise   = undefined -}
   where inptl  = incoming cr
         outptl = outgoing cr
         newptlid = ptlid info  
+        st = istup info
         (newm1,newm2) = mothup info
         updtr ns os = ns ++ os 
 
@@ -84,7 +95,7 @@ getDecayTop ev@(LHEvent _einfo pinfos) =
   let pmap = M.fromList (Prelude.map (\x->(idee x,x)) pinfos)
       dtops = mkFullDecayTop (mkIntTree pinfos)
       ptlidinfotop = fmap (mkDecayPDGExtTop pmap) dtops 
-  in  (ev,pmap,ptlidinfotop)
+  in  trace ("mkIntTree pinfos = " ++ show (mkIntTree pinfos)) $ (ev,pmap,ptlidinfotop)
   
 decayTopEnee :: (Monad m) => Enumeratee (Maybe LHEvent) (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])) m a
 decayTopEnee = EL.map (fmap getDecayTop)  
