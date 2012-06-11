@@ -1,5 +1,5 @@
 Name:		LHEParser
-Version:	0.2.4
+Version:	0.2.999
 Synopsis:	Les Houches Event file parser
 Description: 	Les Houches Event file format parser
 License: 	BSD3
@@ -22,9 +22,9 @@ Library
                   bytestring-lexing, 
                   containers, text == 0.11.*, 
                   xml-types>=0.3, 
-                  enumerator == 0.4.*, 
-                  xml-enumerator == 0.4.*, 
-                  transformers>0.2.2, HEPUtil>=0.1.2, enumerator-util >=0.1.1.1
+                  conduit == 0.4.*,
+                  xml-conduit == 0.7.*,
+                  transformers>0.2.2, HEPUtil>=0.1.999
   Exposed-Modules: 
                     HEP.Parser.LHEParser
                     HEP.Parser.LHEParser.Type 
@@ -32,7 +32,7 @@ Library
                     HEP.Parser.LHEParser.EventProcess
                     HEP.Parser.LHEParser.Parser
                     HEP.Parser.LHEParser.Parser.Text
-                    HEP.Parser.LHEParser.Parser.Enumerator
+                    HEP.Parser.LHEParser.Parser.Conduit
                     HEP.Parser.LHEParser.Formatter
                     HEP.Parser.LHEParser.Formatter.Internal
   Include-dirs:     csrc 
@@ -40,4 +40,9 @@ Library
                     cformatter.h
   C-sources:        csrc/cformatter.c
   extra-libraries:  gfortran
+
 -- fortran-sources:       fsrc/formatter.f
+
+                  -- enumerator == 0.4.*, 
+                  -- xml-enumerator == 0.4.*, 
+                  -- , enumerator-util >=0.1.1.1

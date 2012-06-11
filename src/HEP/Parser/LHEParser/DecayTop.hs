@@ -6,14 +6,14 @@ import Data.List hiding (map)
 import Control.Monad
 import HEP.Util.Functions
 
-import Data.Enumerator hiding (map)
-import qualified Data.Enumerator.List as EL
+import Data.Conduit 
+import qualified Data.Conduit.List as CL
 
 import Debug.Trace
 
 -- | shorthand
 
-type DecayTopIteratee a b m = Iteratee (Maybe (a,b,[DecayTop PtlIDInfo])) m 
+-- type DecayTopConduit a b m = Conduit (Maybe (a,b,[DecayTop PtlIDInfo])) m 
 
 
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
@@ -101,14 +101,14 @@ getDecayTop ev@(LHEvent _einfo pinfos) =
       ptlidinfotop = fmap (mkDecayPDGExtTop pmap) dtops 
   in  (ev,pmap,ptlidinfotop)
   
-decayTopEnee :: (Monad m) => Enumeratee (Maybe LHEvent) (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])) m a
-decayTopEnee = EL.map (fmap getDecayTop)  
+decayTopConduit :: (Monad m) => Conduit (Maybe LHEvent) m (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])) 
+decayTopConduit = CL.map (fmap getDecayTop)  
 
 
 -- | make ordered decay topology from unordered decaytop
-ordDecayTopEnee :: Monad m => 
-                   Enumeratee (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]))
+ordDecayTopConduit :: Monad m => 
+                      Conduit (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]))
+                              m 
                               (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]))
-                              m a
-ordDecayTopEnee = EL.map (fmap f)
+ordDecayTopConduit = CL.map (fmap f)
   where f (a,b,cs) = (a,b,Prelude.map mkOrdDecayTop cs)
