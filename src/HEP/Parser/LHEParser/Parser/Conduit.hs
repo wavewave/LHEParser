@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction, ScopedTypeVariables #-}
 
 module HEP.Parser.LHEParser.Parser.Conduit where
 
@@ -7,6 +7,7 @@ import Control.Monad.IO.Class
 import Data.XML.Types
 import Data.Conduit as C
 import Data.Conduit.List as CL
+import Data.Conduit.Util.Control as CU
 import qualified Data.Text as T
 
 import HEP.Parser.LHEParser.Type
@@ -15,28 +16,6 @@ import HEP.Parser.LHEParser.Parser.Text
 import Text.XML.Stream.Render
 
 import Prelude hiding (dropWhile, takeWhile)
-
--- | dropWhile for Listlike conduit 
-
-dropWhile :: Monad m => (a -> Bool) -> Sink a m () 
-dropWhile p = 
-    NeedInput push close 
-  where
-    push b | p b = dropWhile p 
-           | otherwise = Done Nothing ()
-    close = return ()  
-     
--- | takeWhile for Listlike conduit
-
-takeWhile :: Monad m => (a -> Bool) -> Sink a m [a] 
-takeWhile p = go p id 
-  where 
-    go p front = NeedInput (push p front) (return $ front [])
-
-    push p front x 
-        | p x = NeedInput (push p front') (return $ front' [])
-        | otherwise = Done Nothing (front [])
-      where front' = front . (x:) 
 
 
 -- | check event starting
@@ -65,9 +44,9 @@ parseSingleEvent _ = Nothing
 
 chunkLHEventConduit :: (Monad m) => Conduit Event m [Event] 
 chunkLHEventConduit = C.sequence $ do 
-                        dropWhile (not.isEventStart)
+                        CU.dropWhile (not.isEventStart)
                         CL.drop 1 
-                        ev <- takeWhile (not.isEventEnd)
+                        ev <- CU.takeWhileR (not.isEventEnd)
                         CL.drop 1 
                         return ev
 
@@ -83,15 +62,13 @@ parseEventConduit x = chunkLHEventConduit =$ CL.filter (not.null) =$ parseLHEven
 
 -- | 
 
-parseLHEHeader :: (Monad m) => Sink Event m [Event] 
-parseLHEHeader = do 
-  evs <- takeWhile (not.isEventStart)
-  return evs 
+parseLHEHeader :: (Monad m) => Conduit Event m Event 
+parseLHEHeader = CU.takeWhile (not.isEventStart)
 
+-- | 
 
-{- 
-textLHEHeader :: (MonadIO m) => Sink Event m [T.Text]
-textLHEHeader = do 
-  headevs <- parseLHEHeader 
-  run_ $ C.enumList 1 headevs $$ renderText def =$ CL.consume
--}
+textLHEHeader :: (MonadIO m, MonadThrow m, MonadUnsafeIO m) => Sink Event m [T.Text]
+textLHEHeader = parseLHEHeader =$ renderText def =$ CL.consume 
+  
+  
+
