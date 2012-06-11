@@ -42,23 +42,23 @@ parseSingleEvent _ = Nothing
 
 -- | 
 
-chunkLHEventConduit :: (Monad m) => Conduit Event m [Event] 
-chunkLHEventConduit = C.sequence $ do 
-                        CU.dropWhile (not.isEventStart)
-                        CL.drop 1 
-                        ev <- CU.takeWhileR (not.isEventEnd)
-                        CL.drop 1 
-                        return ev
+chunkLHEvent :: (Monad m) => Conduit Event m [Event] 
+chunkLHEvent = C.sequence $ do 
+                 CU.dropWhile (not.isEventStart)
+                 CL.drop 1 
+                 ev <- CU.takeWhileR (not.isEventEnd)
+                 CL.drop 1 
+                 return ev
 
 -- | 
 
-parseLHEventConduit :: (Monad m) => Conduit [Event] m (Maybe LHEvent) 
-parseLHEventConduit = CL.map parseSingleEvent 
+parseLHEvent :: (Monad m) => Conduit [Event] m (Maybe LHEvent) 
+parseLHEvent = CL.map parseSingleEvent 
 
 -- | 
 
-parseEventConduit :: (Monad m) => Sink (Maybe LHEvent) m a -> Sink Event m a 
-parseEventConduit x = chunkLHEventConduit =$ CL.filter (not.null) =$ parseLHEventConduit =$ x
+parseEvent :: (Monad m) => Sink (Maybe LHEvent) m a -> Sink Event m a 
+parseEvent x = chunkLHEvent =$ CL.filter (not.null) =$ parseLHEvent =$ x
 
 -- | 
 
