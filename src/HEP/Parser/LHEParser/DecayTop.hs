@@ -15,32 +15,40 @@ import Debug.Trace
 
 -- type DecayTopConduit a b m = Conduit (Maybe (a,b,[DecayTop PtlIDInfo])) m 
 
+-- | 
 
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
 findonlyTerminal (Decay (_x,xs)) ys = foldr findonlyTerminal ys xs 
 
+-- | 
 
 mkOrdDecayTop :: (Ord a) => DecayTop a -> DecayTop a 
 mkOrdDecayTop (Decay (x, xs)) = Decay (x, map (mkOrdDecayTop) (sort xs)) 
 mkOrdDecayTop (Terminal x) = Terminal x
 
+-- | 
 
 mkDecayPDGExtTop :: PtlInfoMap -> DecayTop PtlID -> DecayTop PtlIDInfo  
 mkDecayPDGExtTop pmap idtop = fmap f idtop 
   where f pid = let pinfo = maybe undefined id (M.lookup pid pmap)
                 in PIDInfo (idup pinfo) pinfo
 
+-- | 
 
 mkDecayPDGTop :: PtlInfoMap -> DecayTop PtlID -> DecayTop PDGID
 mkDecayPDGTop pmap idtop = fmap f idtop  
   where f pid = let pinfo = maybe undefined id (M.lookup pid pmap)
                 in  idup pinfo
 
+-- | 
+
 mkFullDecayTop :: IntTree -> [DecayTop PtlID] 
-mkFullDecayTop tree = let lst = outgoing (cross tree)
+mkFullDecayTop tree = let lst = outgoing (inout tree)
                           dmap = decaymap tree
                       in map (mkDecayTop dmap) lst
+
+-- | 
 
 mkDecayTop :: DecayMap -> PtlID -> DecayTop PtlID
 mkDecayTop dmap pid = let dlist = (M.lookup pid dmap)
@@ -48,24 +56,20 @@ mkDecayTop dmap pid = let dlist = (M.lookup pid dmap)
                         Nothing -> Terminal pid 
                         Just ls -> Decay (pid, map (mkDecayTop dmap) ls)
 
+-- | 
+
 mkIntTree :: [PtlInfo] -> IntTree
-mkIntTree = foldr mkIntTreeWkr (IntTree (Cross [] []) M.empty)
+mkIntTree = foldr mkIntTreeWkr (IntTree (InOut [] []) M.empty)
 
 -- | this is not correct. only for madevent/pythia generated lhe file 
 
 mkIntTreeWkr :: PtlInfo -> IntTree -> IntTree
 mkIntTreeWkr info (IntTree cr dmap)  
-  | st == (-1) = IntTree (Cross (newptlid : inptl) outptl) dmap 
-  | st /= (-1) && newm1 `elem` [0,1,2] && newm2 `elem` [0,1,2] = IntTree (Cross inptl (newptlid:outptl)) dmap 
-  | st /= (-1) && newm1 /= newm2 = IntTree (Cross inptl (newptlid : outptl)) dmap 
+  | st == (-1) = IntTree (InOut (newptlid : inptl) outptl) dmap 
+  | st /= (-1) && newm1 `elem` [0,1,2] && newm2 `elem` [0,1,2] = IntTree (InOut inptl (newptlid:outptl)) dmap 
+  | st /= (-1) && newm1 /= newm2 = IntTree (InOut inptl (newptlid : outptl)) dmap 
   | st /= (-1) && newm1 == newm2 = let ndmap = M.insertWith updtr newm1 [newptlid] dmap
                                    in IntTree cr ndmap 
-{-
-  | newm1 == 0 && newm2 == 0 = IntTree (Cross (newptlid : inptl) outptl) dmap
-  | newm1 /= newm2           = IntTree (Cross inptl (newptlid : outptl)) dmap  
-  | newm1 == newm2           = let ndmap = M.insertWith updtr newm1 [newptlid] dmap 
-                               in IntTree cr ndmap
-  | otherwise   = undefined -}
   where inptl  = incoming cr
         outptl = outgoing cr
         newptlid = ptlid info  
@@ -73,6 +77,7 @@ mkIntTreeWkr info (IntTree cr dmap)
         (newm1,newm2) = mothup info
         updtr ns os = ns ++ os 
 
+-- | 
 
 matchDecayTopAndGet4Momentum :: DecayTop PDGID -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
 matchDecayTopAndGet4Momentum (Terminal pid) (Terminal pinfo) 
@@ -84,6 +89,8 @@ matchDecayTopAndGet4Momentum (Decay (pid,xs)) (Decay (pinfo,ys))
   | otherwise = Nothing
 matchDecayTopAndGet4Momentum _ _ = Nothing 
 
+-- |
+
 matchDecayTopGroupAndGet4Momentum :: DecayTop [PDGID] -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
 matchDecayTopGroupAndGet4Momentum (Terminal pids) (Terminal pinfo) =
   if (pdgid pinfo `elem` pids) then Just . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
@@ -93,6 +100,8 @@ matchDecayTopGroupAndGet4Momentum (Decay (pids,xs)) (Decay (pinfo,ys)) =
                                        return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
                                else Nothing
 matchDecayTopGroupAndGet4Momentum _ _ = Nothing 
+
+-- | 
 
 getDecayTop :: LHEvent -> (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])
 getDecayTop ev@(LHEvent _einfo pinfos) = 

@@ -1,3 +1,5 @@
+{-# LANGUAGE GADTs, EmptyDataDecls #-}
+
 module HEP.Parser.LHEParser.Type where
 
 import qualified Data.Map as M
@@ -5,17 +7,26 @@ import qualified Data.ByteString as B
 import Control.Monad.State
 import HEP.Util.Functions
 
+-- |
 
 data LHEvent = LHEvent EventInfo [PtlInfo]
                deriving Show
 
+-- |
+
 type PtlID = Int 
+
+-- | 
 
 class IDable a  where 
   idee :: a -> Int
 
+-- | 
+
 instance IDable PtlInfo where
   idee = ptlid
+
+-- |
 
 data EventInfo = EvInfo { 
   nup    :: Int, 
@@ -39,6 +50,8 @@ data PtlInfo   = PtlInfo {
   spinup :: Double
   } deriving Show
 
+-- | 
+
 emptyPtlInfo :: PtlInfo
 emptyPtlInfo = PtlInfo { ptlid = 0
                        , idup  = 0
@@ -49,41 +62,103 @@ emptyPtlInfo = PtlInfo { ptlid = 0
                        , vtimup = 0
                        , spinup = 0 }
 
+-- | 
+
 type EventReadMonadT = StateT (B.ByteString, PtlID) 
+
+-- | 
 
 type PDGID = Int 
 
+-- | 
+
 type PtlInfoMap = M.Map Int PtlInfo
+
+-- | 
 
 data DecayTop a = Decay (a, [ DecayTop a ] ) 
                 | Terminal a 
                 deriving Eq
-                                     
+     
+-- | 
+                                
 type DecayMap = M.Map PtlID [PtlID]
 
-data Cross    = Cross {
+-- | 
+
+data InOut  = InOut {
   incoming :: [PtlID], 
   outgoing :: [PtlID]
   } deriving (Show,Eq)
 
+-- | 
+
 data IntTree = IntTree {
-  cross    ::  Cross,
+  inout    ::  InOut,
   decaymap :: DecayMap 
 } deriving (Show,Eq)
+
+-- | 
+
+data Collision 
+
+-- | 
+
+data Decay 
+
+-- | 
+
+data ProcessTree a b where 
+  CrossTree :: (b,b) -> DecayTop b -> ProcessTree Collision b
+  DecayTree :: b -> DecayTop b -> ProcessTree Decay b
+
+-- | get the pair of incoming particles for cross process
+
+incomingPair :: ProcessTree Collision b -> (b,b)
+incomingPair (CrossTree (x,y) _) = (x,y)
+
+-- | get the mother particle for decay process
+
+motherPtl :: ProcessTree Decay b -> b 
+motherPtl (DecayTree x _) = x
+
+-- |
+
+data EventTree b = CrossEvent (ProcessTree Collision b)
+                 | DecayEvent (ProcessTree Decay b)
+
+-- | 
+
+isCrossEvent :: EventTree b -> Bool
+isCrossEvent (CrossEvent _) = True
+isCrossEvent _ = False
+
+-- | 
+
+isDecayEvent :: EventTree b -> Bool 
+isDecayEvent (DecayEvent _) = True 
+isDecayEvent _ = False
+
+-- | 
 
 data PtlIDInfo = PIDInfo {
   pdgid :: PDGID,  
   ptlinfo :: PtlInfo
 } deriving Show
 
+-- | 
+
 instance Functor (DecayTop) where
   fmap f (Decay (x, xs)) = Decay ((f x), map (fmap f) xs) 
   fmap f (Terminal x)    = Terminal (f x)
+
+-- | 
 
 instance (Show a) => Show (DecayTop a) where
   show (Decay (x, xs)) = "Decay " ++ show (x,xs)
   show (Terminal x)    = "Terminal " ++ show x 
 
+-- | 
 
 instance (Ord a) => Ord (DecayTop a) where
   compare (Decay (x,xs)) (Decay (y,ys)) = case compare x y of 
@@ -95,12 +170,17 @@ instance (Ord a) => Ord (DecayTop a) where
   compare (Terminal x) (Terminal y) = compare x y
   -- compare _ _ = undefined 
 
+-- | 
+
 instance Eq PtlIDInfo where
   (PIDInfo x1 _y1) == (PIDInfo x2 _y2) = x1 == x2 
+
+-- | 
 
 instance Ord PtlIDInfo where
   compare (PIDInfo x1 _y1) (PIDInfo x2 _y2) = compare x1 x2
 
+-- | 
 
 pupTo4mom :: (Double,Double,Double,Double,Double) -> FourMomentum 
 pupTo4mom (x,y,z,e,_m) = (e,x,y,z)

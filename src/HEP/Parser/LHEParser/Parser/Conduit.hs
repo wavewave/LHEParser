@@ -57,8 +57,8 @@ parseLHEvent = CL.map parseSingleEvent
 
 -- | 
 
-parseEvent :: (Monad m) => Sink (Maybe LHEvent) m a -> Sink Event m a 
-parseEvent x = chunkLHEvent =$ CL.filter (not.null) =$ parseLHEvent =$ x
+parseEvent :: (Monad m) => Conduit Event m (Maybe LHEvent)  
+parseEvent = chunkLHEvent =$= CL.filter (not.null) =$= parseLHEvent 
 
 -- | 
 
