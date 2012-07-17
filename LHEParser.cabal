@@ -22,9 +22,9 @@ Library
                   bytestring-lexing, 
                   containers, text == 0.11.*, 
                   xml-types>=0.3, 
-                  conduit == 0.4.*,
-                  conduit-util >= 0.1.999 && < 0.3,
-                  xml-conduit == 0.7.*,
+                  conduit == 0.5.*,
+                  conduit-util >= 0.2.0.999 && < 0.3,
+                  xml-conduit == 1.0.*,
                   transformers == 0.3.*, 
                   HEPUtil>=0.1.999
   Exposed-Modules: 
