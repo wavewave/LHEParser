@@ -71,7 +71,7 @@ mkFortran tdir files = do
         let fn = dropExtension (takeFileName file)
         in  tdir </> fn ++ ".o"
   let compile file = do
-        let command = "gfortran -m64 -o " ++ objfile file ++ " -c " ++ file
+        let command = "gfortran -fPIC -m64 -o " ++ objfile file ++ " -c " ++ file
         putStrLn $ "run fortran: " ++  command  
         system command 
   mapM_ compile files 
