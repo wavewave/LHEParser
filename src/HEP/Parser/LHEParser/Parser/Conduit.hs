@@ -25,14 +25,12 @@ isEventStart (EventBeginElement name _) = nameLocalName name == "event"
 isEventStart _ = False
 
 -- | check event ending 
-
 isEventEnd :: Event -> Bool 
 isEventEnd (EventEndElement name) = nameLocalName name == "event"
 isEventEnd _ = False
 
 
 -- | 
-  
 parseSingleEvent :: [Event] -> Maybe LHEvent
 parseSingleEvent ((EventContent content):_)  =
   case content of 
@@ -41,7 +39,6 @@ parseSingleEvent ((EventContent content):_)  =
 parseSingleEvent _ = Nothing
 
 -- | 
- 
 chunkLHEvent :: forall m u. Monad m => Conduit Event m [Event] 
 chunkLHEvent = CU.sequence action
   where action :: Sink Event m [Event] 
@@ -54,22 +51,18 @@ chunkLHEvent = CU.sequence action
 
 
 -- | 
-
 parseLHEvent :: (Monad m) => Conduit [Event] m (Maybe LHEvent) 
 parseLHEvent = CL.map parseSingleEvent 
 
 -- | 
-
 parseEvent :: (Monad m) => Conduit Event m (Maybe LHEvent)  
 parseEvent = chunkLHEvent =$= CL.filter (not.null) =$= parseLHEvent 
 
 -- | 
-
 parseLHEHeader :: (Monad m) => Conduit Event m Event 
 parseLHEHeader = CU.takeWhile (not.isEventStart)
 
 -- | 
-
 textLHEHeader :: (MonadIO m, MonadThrow m, MonadUnsafeIO m) => Sink Event m [T.Text]
 textLHEHeader = parseLHEHeader =$ renderText def =$ CL.consume 
   
