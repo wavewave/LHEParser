@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-sudo apt-get install libblas-dev liblapack-dev libgsl0-dev
+sudo apt-get install libblas-dev liblapack-dev libgsl0-dev gfortran
 cabal install transformers 
 cabal install hscolour
 cabal install hmatrix 
