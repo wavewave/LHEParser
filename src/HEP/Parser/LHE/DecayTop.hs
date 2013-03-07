@@ -65,12 +65,10 @@ mkDecayTop dmap pid = let dlist = (M.lookup pid dmap)
                         Just ls -> Decay (pid, map (mkDecayTop dmap) ls)
 
 -- | 
-
 mkIntTree :: [PtlInfo] -> IntTree
 mkIntTree = foldr mkIntTreeWkr (IntTree (InOut [] []) M.empty)
 
 -- | this is not correct. only for madevent/pythia generated lhe file 
-
 mkIntTreeWkr :: PtlInfo -> IntTree -> IntTree
 mkIntTreeWkr info (IntTree cr dmap) 
   | st == (-1) = IntTree (InOut (newptlid : inptl) outptl) dmap 
@@ -89,7 +87,6 @@ mkIntTreeWkr info (IntTree cr dmap)
         updtr ns os = ns ++ os 
 
 -- | 
-
 matchDecayTopAndGet4Momentum :: DecayTop PDGID -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
 matchDecayTopAndGet4Momentum (Terminal pid) (Terminal pinfo) 
   | pid == pdgid pinfo = Just . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
@@ -101,7 +98,6 @@ matchDecayTopAndGet4Momentum (Decay (pid,xs)) (Decay (pinfo,ys))
 matchDecayTopAndGet4Momentum _ _ = Nothing 
 
 -- |
-
 matchDecayTopGroupAndGet4Momentum :: DecayTop [PDGID] -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
 matchDecayTopGroupAndGet4Momentum (Terminal pids) (Terminal pinfo) =
   if (pdgid pinfo `elem` pids) then Just . Terminal . pupTo4mom . pup . ptlinfo $ pinfo

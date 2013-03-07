@@ -51,10 +51,9 @@ parseSingleEvent ((EventContent content):_)  =
 parseSingleEvent _ = Nothing
 
 -- | 
-chunkLHEvent :: forall m u. Monad m => Conduit Event m [Event] 
+chunkLHEvent :: Monad m => Conduit Event m [Event] 
 chunkLHEvent = CU.sequence action
-  where action :: Sink Event m [Event] 
-        action = do CU.dropWhile (not.isEventStart) 
+  where action = do CU.dropWhile (not.isEventStart) 
                     CL.drop 1 
                     ev <- CU.takeWhileR (not.isEventEnd)
                     CL.drop 1 
