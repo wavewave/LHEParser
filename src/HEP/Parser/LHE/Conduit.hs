@@ -1,4 +1,7 @@
-{-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -16,11 +19,13 @@
 
 module HEP.Parser.LHE.Conduit where
 
+import           Control.Exception
 import           Control.Monad.IO.Class
 import           Data.Conduit as C
 import           Data.Conduit.List as CL
 import           Data.Conduit.Util.Control as CU
 import qualified Data.Text as T
+import           Data.Typeable
 import           Data.XML.Types
 import           Text.XML.Stream.Render
 -- 
@@ -28,6 +33,11 @@ import           HEP.Parser.LHE.Type
 import           HEP.Parser.LHE.Text
 -- 
 import Prelude hiding (dropWhile, takeWhile)
+
+data ParseEventException = ParseEventException String 
+  deriving (Show, Eq, Typeable)
+
+instance Exception ParseEventException
 
 
 -- | check event starting
@@ -43,12 +53,12 @@ isEventEnd _ = False
 
 
 -- | 
-parseSingleEvent :: [Event] -> Maybe LHEvent
+parseSingleEvent :: (MonadThrow m) => [Event] -> m LHEvent
 parseSingleEvent ((EventContent content):_)  =
   case content of 
-    ContentText txt -> Just (getEvent txt)
-    _ -> Nothing
-parseSingleEvent _ = Nothing
+    ContentText txt -> return  (getEvent txt)
+    _ -> monadThrow (ParseEventException "cannot parse event") 
+parseSingleEvent _ = monadThrow (ParseEventException "cannot parse event")
 
 -- | 
 chunkLHEvent :: Monad m => Conduit Event m [Event] 
@@ -62,11 +72,11 @@ chunkLHEvent = CU.sequence action
 
 
 -- | 
-parseLHEvent :: (Monad m) => Conduit [Event] m (Maybe LHEvent) 
-parseLHEvent = CL.map parseSingleEvent 
+parseLHEvent :: (MonadThrow m) => Conduit [Event] m LHEvent 
+parseLHEvent = CL.mapM parseSingleEvent 
 
 -- | 
-parseEvent :: (Monad m) => Conduit Event m (Maybe LHEvent)  
+parseEvent :: (MonadThrow m) => Conduit Event m LHEvent  
 parseEvent = chunkLHEvent =$= CL.filter (not.null) =$= parseLHEvent 
 
 -- | 
