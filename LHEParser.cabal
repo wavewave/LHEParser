@@ -1,5 +1,5 @@
 Name:		LHEParser
-Version:	0.2.999
+Version:	0.999
 Synopsis:	Les Houches Event file parser
 Description: 	Les Houches Event file format parser
 License: 	BSD3
@@ -28,15 +28,12 @@ Library
                   transformers == 0.3.*, 
                   HEPUtil>=0.1.999
   Exposed-Modules: 
-                    HEP.Parser.LHEParser
-                    HEP.Parser.LHEParser.Type 
-                    HEP.Parser.LHEParser.DecayTop
-                    HEP.Parser.LHEParser.EventProcess
-                    HEP.Parser.LHEParser.Parser
-                    HEP.Parser.LHEParser.Parser.Text
-                    HEP.Parser.LHEParser.Parser.Conduit
-                    HEP.Parser.LHEParser.Formatter
-                    HEP.Parser.LHEParser.Formatter.Internal
+                    HEP.Parser.LHE.Conduit
+                    HEP.Parser.LHE.DecayTop
+                    HEP.Parser.LHE.Formatter
+                    HEP.Parser.LHE.Formatter.Internal
+                    HEP.Parser.LHE.Text
+                    HEP.Parser.LHE.Type 
   Include-dirs:     csrc 
   Install-includes: fformatter.h
                     cformatter.h

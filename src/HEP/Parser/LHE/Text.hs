@@ -1,15 +1,30 @@
 {-# LANGUAGE OverloadedStrings, BangPatterns, ScopedTypeVariables #-}
 
-module HEP.Parser.LHEParser.Parser.Text where
+-----------------------------------------------------------------------------
+-- |
+-- Module      : HEP.Parser.LHE.Text
+-- Copyright   : (c) 2010-2013 Ian-Woo Kim
+--
+-- License     : GPL-3
+-- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
+-- Stability   : experimental
+-- Portability : GHC
+--
+-- number parsing
+-- 
+-----------------------------------------------------------------------------
 
-import HEP.Parser.LHEParser.Type
+
+module HEP.Parser.LHE.Text where
+
 
 import Control.Monad.Identity 
 import Control.Monad.State
-
 import Data.Text as T
 import Data.Text.Read
-
+-- 
+import HEP.Parser.LHE.Type
+--
 import Prelude hiding (head,lines,unlines)
 
 type EventReadMonadTextT = StateT (Text, PtlID)

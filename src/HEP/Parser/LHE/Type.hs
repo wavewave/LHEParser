@@ -1,11 +1,27 @@
 {-# LANGUAGE GADTs, EmptyDataDecls #-}
 
-module HEP.Parser.LHEParser.Type where
+-----------------------------------------------------------------------------
+-- |
+-- Module      : HEP.Parser.LHE.Type
+-- Copyright   : (c) 2010-2013 Ian-Woo Kim
+--
+-- License     : GPL-3
+-- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
+-- Stability   : experimental
+-- Portability : GHC
+--
+-- Types for LHEParser library
+--
+-----------------------------------------------------------------------------
 
+
+module HEP.Parser.LHE.Type where
+
+import           Control.Monad.State
 import qualified Data.Map as M
 import qualified Data.ByteString as B
-import Control.Monad.State
-import HEP.Util.Functions
+--
+import           HEP.Util.Functions
 
 -- |
 
@@ -71,49 +87,40 @@ type EventReadMonadT = StateT (B.ByteString, PtlID)
 type PDGID = Int 
 
 -- | 
-
 type PtlInfoMap = M.Map Int PtlInfo
 
 -- | 
-
 data DecayTop a = Decay (a, [ DecayTop a ] ) 
                 | Terminal a 
                 deriving Eq
      
 -- | 
-                                
 type DecayMap = M.Map PtlID [PtlID]
 
 -- | 
-
 data InOut  = InOut {
   incoming :: [PtlID], 
   outgoing :: [PtlID]
   } deriving (Show,Eq)
 
 -- | 
-
 data IntTree = IntTree {
   inout    ::  InOut,
   decaymap :: DecayMap 
 } deriving (Show,Eq)
 
 -- | 
-
 data Collision 
 
 -- | 
-
 data Decay 
 
 -- | 
-
 data ProcessTree a b where 
   CrossTree :: (b,b) -> DecayTop b -> ProcessTree Collision b
   DecayTree :: b -> DecayTop b -> ProcessTree Decay b
 
 -- | get the pair of incoming particles for cross process
-
 incomingPair :: ProcessTree Collision b -> (b,b)
 incomingPair (CrossTree (x,y) _) = (x,y)
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module HEP.Parser.LHEParser.Formatter.Internal where 
+module HEP.Parser.LHE.Formatter.Internal where 
 
 import Foreign.C
 import Foreign.Ptr

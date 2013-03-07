@@ -1,28 +1,36 @@
-module HEP.Parser.LHEParser.DecayTop where
+-----------------------------------------------------------------------------
+-- |
+-- Module      : HEP.Parser.LHE.DecayTop
+-- Copyright   : (c) 2010-2013 Ian-Woo Kim
+--
+-- License     : GPL-3
+-- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
+-- Stability   : experimental
+-- Portability : GHC
+--
+-- Decay topology parser 
+-- 
+-----------------------------------------------------------------------------
 
-import HEP.Parser.LHEParser.Type
-import qualified Data.Map as M
-import Data.List hiding (map)
-import Control.Monad
-import HEP.Util.Functions
+module HEP.Parser.LHE.DecayTop where
 
-import Data.Conduit 
+import           Control.Monad
+import           Data.Conduit 
 import qualified Data.Conduit.List as CL
+import           Data.List hiding (map)
+import qualified Data.Map as M
+-- from hep-platform 
+import           HEP.Util.Functions
+-- from this package 
+import           HEP.Parser.LHE.Type
 
-import Debug.Trace
-
--- | shorthand
-
--- type DecayTopConduit a b m = Conduit (Maybe (a,b,[DecayTop PtlIDInfo])) m 
 
 -- | 
-
 findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a] 
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
 findonlyTerminal (Decay (_x,xs)) ys = foldr findonlyTerminal ys xs 
 
 -- | 
-
 mkOrdDecayTop :: (Ord a) => DecayTop a -> DecayTop a 
 mkOrdDecayTop (Decay (x, xs)) = Decay (x, map (mkOrdDecayTop) (sort xs)) 
 mkOrdDecayTop (Terminal x) = Terminal x
@@ -64,12 +72,15 @@ mkIntTree = foldr mkIntTreeWkr (IntTree (InOut [] []) M.empty)
 -- | this is not correct. only for madevent/pythia generated lhe file 
 
 mkIntTreeWkr :: PtlInfo -> IntTree -> IntTree
-mkIntTreeWkr info (IntTree cr dmap)  
+mkIntTreeWkr info (IntTree cr dmap) 
   | st == (-1) = IntTree (InOut (newptlid : inptl) outptl) dmap 
-  | st /= (-1) && newm1 `elem` [0,1,2] && newm2 `elem` [0,1,2] = IntTree (InOut inptl (newptlid:outptl)) dmap 
-  | st /= (-1) && newm1 /= newm2 = IntTree (InOut inptl (newptlid : outptl)) dmap 
-  | st /= (-1) && newm1 == newm2 = let ndmap = M.insertWith updtr newm1 [newptlid] dmap
-                                   in IntTree cr ndmap 
+  | st /= (-1) && newm1 `elem` [0,1,2] && newm2 `elem` [0,1,2] 
+    = IntTree (InOut inptl (newptlid:outptl)) dmap 
+  | st /= (-1) && newm1 == newm2 
+    = let ndmap = M.insertWith updtr newm1 [newptlid] dmap
+      in IntTree cr ndmap 
+  | otherwise = IntTree (InOut inptl (newptlid : outptl)) dmap 
+
   where inptl  = incoming cr
         outptl = outgoing cr
         newptlid = ptlid info  

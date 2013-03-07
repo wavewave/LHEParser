@@ -1,30 +1,35 @@
--- | Formatting back to LHE format. Currently this uses Text.Printf and String, so it's slow.
---   Later, when text-format library becomes mature, I will switch to Data.Text.
+
+-----------------------------------------------------------------------------
+-- |
+-- Module      : HEP.Parser.LHE.Formatter
+-- Copyright   : (c) 2010-2013 Ian-Woo Kim
 --
+-- License     : GPL-3
+-- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
+-- Stability   : experimental
+-- Portability : GHC
+--
+-- Formatting back to LHE format. Currently this uses Text.Printf and String, so it's slow.
+-- Later, when text-format library becomes mature, I will switch to Data.Text.
+--
+-----------------------------------------------------------------------------
 
-
-module HEP.Parser.LHEParser.Formatter ( 
+module HEP.Parser.LHE.Formatter ( 
     printPtlInfo
   , formatLHEvent
   , formatEventInfo
   , formatParticleInfo
   ) where
 
-import Text.Printf
-
-import HEP.Parser.LHEParser.Type
-import HEP.Parser.LHEParser.Formatter.Internal
-
 import Control.Applicative 
-
-import Foreign.C
--- import Foreign.Ptr
-
-import Foreign.Marshal.Array 
-
-import System.IO.Unsafe
-
 import Data.List
+import Foreign.C
+import Foreign.Marshal.Array 
+import System.IO.Unsafe
+import Text.Printf
+--
+import HEP.Parser.LHE.Type
+import HEP.Parser.LHE.Formatter.Internal
 
 
 px :: PtlInfo -> Double

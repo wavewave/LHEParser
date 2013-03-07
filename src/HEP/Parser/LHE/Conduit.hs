@@ -1,20 +1,32 @@
 {-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction, ScopedTypeVariables #-}
 
-module HEP.Parser.LHEParser.Parser.Conduit where
+-----------------------------------------------------------------------------
+-- |
+-- Module      : HEP.Parser.LHE.Conduit
+-- Copyright   : (c) 2010-2013 Ian-Woo Kim
+--
+-- License     : GPL-3
+-- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
+-- Stability   : experimental
+-- Portability : GHC
+--
+-- LHE parser using xml-conduit 
+-- 
+-----------------------------------------------------------------------------
 
-import Control.Monad.IO.Class
+module HEP.Parser.LHE.Conduit where
 
-import Data.XML.Types
-import Data.Conduit as C
-import Data.Conduit.List as CL
-import Data.Conduit.Util.Control as CU
+import           Control.Monad.IO.Class
+import           Data.Conduit as C
+import           Data.Conduit.List as CL
+import           Data.Conduit.Util.Control as CU
 import qualified Data.Text as T
-
-import HEP.Parser.LHEParser.Type
-import HEP.Parser.LHEParser.Parser.Text
-
-import Text.XML.Stream.Render
-
+import           Data.XML.Types
+import           Text.XML.Stream.Render
+-- 
+import           HEP.Parser.LHE.Type
+import           HEP.Parser.LHE.Text
+-- 
 import Prelude hiding (dropWhile, takeWhile)
 
 
