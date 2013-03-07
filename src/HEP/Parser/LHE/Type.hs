@@ -191,3 +191,9 @@ instance Ord PtlIDInfo where
 
 pupTo4mom :: (Double,Double,Double,Double,Double) -> FourMomentum 
 pupTo4mom (x,y,z,e,_m) = (e,x,y,z)
+
+
+data LHEventTop = LHEventTop { lhet_ev :: LHEvent
+                             , lhet_pinfos :: PtlInfoMap 
+                             , lhet_dtops :: [DecayTop PtlIDInfo]
+                             } 

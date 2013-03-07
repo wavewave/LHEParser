@@ -30,34 +30,30 @@ findonlyTerminal :: DecayTop a -> [DecayTop a] -> [DecayTop a]
 findonlyTerminal (Terminal x) xs = (Terminal x) : xs 
 findonlyTerminal (Decay (_x,xs)) ys = foldr findonlyTerminal ys xs 
 
--- | 
+-- | make an ordered decay top structure from unordered by ordering defined for the type a
 mkOrdDecayTop :: (Ord a) => DecayTop a -> DecayTop a 
 mkOrdDecayTop (Decay (x, xs)) = Decay (x, map (mkOrdDecayTop) (sort xs)) 
 mkOrdDecayTop (Terminal x) = Terminal x
 
 -- | 
-
 mkDecayPDGExtTop :: PtlInfoMap -> DecayTop PtlID -> DecayTop PtlIDInfo  
 mkDecayPDGExtTop pmap idtop = fmap f idtop 
   where f pid = let pinfo = maybe undefined id (M.lookup pid pmap)
                 in PIDInfo (idup pinfo) pinfo
 
 -- | 
-
 mkDecayPDGTop :: PtlInfoMap -> DecayTop PtlID -> DecayTop PDGID
 mkDecayPDGTop pmap idtop = fmap f idtop  
   where f pid = let pinfo = maybe undefined id (M.lookup pid pmap)
                 in  idup pinfo
 
 -- | 
-
 mkFullDecayTop :: IntTree -> [DecayTop PtlID] 
 mkFullDecayTop tree = let lst = outgoing (inout tree)
                           dmap = decaymap tree
                       in map (mkDecayTop dmap) lst
 
 -- | 
-
 mkDecayTop :: DecayMap -> PtlID -> DecayTop PtlID
 mkDecayTop dmap pid = let dlist = (M.lookup pid dmap)
                       in  case dlist of 
@@ -109,22 +105,26 @@ matchDecayTopGroupAndGet4Momentum (Decay (pids,xs)) (Decay (pinfo,ys)) =
 matchDecayTopGroupAndGet4Momentum _ _ = Nothing 
 
 -- | 
-
-getDecayTop :: LHEvent -> (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])
+getDecayTop :: LHEvent -> LHEventTop 
+               --  -> (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])
 getDecayTop ev@(LHEvent _einfo pinfos) = 
   let pmap = M.fromList (Prelude.map (\x->(idee x,x)) pinfos)
       dtops = mkFullDecayTop (mkIntTree pinfos)
       ptlidinfotop = fmap (mkDecayPDGExtTop pmap) dtops 
-  in  (ev,pmap,ptlidinfotop)
+  in  LHEventTop ev pmap ptlidinfotop
   
-decayTopConduit :: (Monad m) => Conduit (Maybe LHEvent) m (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])) 
-decayTopConduit = CL.map (fmap getDecayTop)  
+
+-- | 
+decayTopConduit :: (Monad m) => 
+                   Conduit LHEvent m LHEventTop
+                   -- (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]) 
+decayTopConduit = CL.map getDecayTop
 
 
 -- | make ordered decay topology from unordered decaytop
 ordDecayTopConduit :: Monad m => 
-                      Conduit (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]))
-                              m 
-                              (Maybe (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]))
-ordDecayTopConduit = CL.map (fmap f)
-  where f (a,b,cs) = (a,b,Prelude.map mkOrdDecayTop cs)
+                      Conduit LHEventTop m LHEventTop 
+                              -- (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]) m 
+                              -- (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])
+ordDecayTopConduit = 
+    CL.map (\(LHEventTop a b cs) -> LHEventTop a b (fmap mkOrdDecayTop cs))
