@@ -197,3 +197,4 @@ data LHEventTop = LHEventTop { lhet_ev :: LHEvent
                              , lhet_pinfos :: PtlInfoMap 
                              , lhet_dtops :: [DecayTop PtlIDInfo]
                              } 
+                deriving (Show)

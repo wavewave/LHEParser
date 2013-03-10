@@ -17,16 +17,19 @@ Library
   hs-source-dirs: src
   ghc-options:      -Wall -O2 -threaded -funbox-strict-fields -fno-warn-unused-do-bind
   ghc-prof-options: -caf-all -auto-all
-  Build-Depends:  base>4, mtl > 2, bytestring, 
-                  attoparsec == 0.10.*, 
+  Build-Depends:  base>4, 
+                  mtl > 2,
+                  bytestring, 
+                  attoparsec >= 0.10, 
                   bytestring-lexing, 
-                  containers, text == 0.11.*, 
+                  containers, 
+                  text >= 0.11, 
                   xml-types>=0.3, 
-                  conduit == 0.5.*,
-                  conduit-util >= 0.2.0.999 && < 0.3,
-                  xml-conduit == 1.0.*,
-                  transformers == 0.3.*, 
-                  HEPUtil>=0.1.999
+                  conduit > 1,
+                  conduit-util >= 0.999,
+                  xml-conduit > 1,
+                  transformers >= 0.3, 
+                  HEPUtil>=0.999
   Exposed-Modules: 
                     HEP.Parser.LHE.Conduit
                     HEP.Parser.LHE.DecayTop
