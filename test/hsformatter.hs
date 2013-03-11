@@ -25,14 +25,6 @@ check pinfo =
       s2 = formatParticleInfoOld pinfo 
   in (s1 == s2) 
 
---   let pinfo = PtlInfo 1 8 32 (3,0) (4,4) (3.2,233.3,1010.0,0.332,0.0003) 2.0 1.0
-
--- act = do 
-{-    runMaybeT $ do 
-      ev <- MaybeT await 
-      liftIO $ print ev
-    act-} 
-
 
 main :: IO ()
 main = do 
@@ -43,32 +35,17 @@ main = do
     awaitForever $ \(LHEvent einfo pinfos) -> do 
      forM_ pinfos $ \pinfo -> do 
        if check pinfo 
-         then return () -- do 
-           -- liftIO $ putStrLn "-----------------"
-           -- liftIO $ print (formatParticleInfo pinfo)
-           -- liftIO $ print (formatParticleInfoOld pinfo)
+         then return () 
          else do 
-           liftIO $ putStrLn "WRONGWRONGWRONGWRONG"
+           liftIO $ putStrLn "Mismatch happened"
            liftIO $ print (formatParticleInfo pinfo)
            liftIO $ print (formatParticleInfoOld pinfo)
   
 main' = do
-  putStrLn (fformats [P (F 8 3) 9.000000000]) 
-
--- 9999999999])
-
-{-  let lst1 = unsafePerformIO $ newArray (map fromIntegral [3,0])
-      lst2 = unsafePerformIO $ newArray (map fromIntegral [4,4])
-      lst3 = unsafePerformIO $ newArray (map realToFrac [3.2,233.3,1010.0,0.332,0.0003])
-
-  let cstr2 = c_formatParticleInfo (fromIntegral (8::Int)) 
-                                   (fromIntegral (32::Int))
-                                   lst1
-                                   lst2
-                                   lst3 
-                                   (realToFrac (2.0::Double))
-                                   (realToFrac (1.0::Double))
-      str2 = unsafePerformIO $ peekCString cstr2
-  putStrLn $ str2 -}
+  putStrLn (fformats [ P (E 11 3) 9.99999999
+                     , P (E 11 3) 8.99999999
+                     , P (E 17 9) 3.32239
+                     , P (F 8 3) 3.2999 
+                     , P (F 8 3) 9.9999 ])
 
   
