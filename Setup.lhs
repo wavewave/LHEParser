@@ -5,7 +5,8 @@
 > 
 > import Config
 > 
-> main = defaultMainWithHooks fortranCompileHook
+> main = defaultMain 
+> -- main = defaultMainWithHooks fortranCompileHook
 > 
 > -- fortranCompileHook = simpleUserHooks { 
 > --  preConf = \_ _ -> system "echo 'hi there'" >> return emptyHookedBuildInfo

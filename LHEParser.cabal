@@ -6,7 +6,7 @@ License: 	BSD3
 License-file:	LICENSE
 Author:		Ian-Woo Kim
 Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
-Build-Type:     Custom
+Build-Type:     Simple
 cabal-version:  >=1.6
 Extra-source-files: Config.hs
                     fsrc/fformatter.f
@@ -34,7 +34,7 @@ Library
                     HEP.Parser.LHE.Conduit
                     HEP.Parser.LHE.DecayTop
                     HEP.Parser.LHE.Formatter
-                    HEP.Parser.LHE.Formatter.Internal
+                    -- HEP.Parser.LHE.Formatter.Internal
                     HEP.Parser.LHE.Text
                     HEP.Parser.LHE.Type 
   Include-dirs:     csrc 
@@ -43,8 +43,3 @@ Library
   C-sources:        csrc/cformatter.c
   extra-libraries:  gfortran
 
--- fortran-sources:       fsrc/formatter.f
-
-                  -- enumerator == 0.4.*, 
-                  -- xml-enumerator == 0.4.*, 
-                  -- , enumerator-util >=0.1.1.1
