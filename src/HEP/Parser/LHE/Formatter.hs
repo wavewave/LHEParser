@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -18,7 +19,9 @@ module HEP.Parser.LHE.Formatter (
     printPtlInfo
   , formatLHEvent
   , formatEventInfo
+  , formatEventInfoOld
   , formatParticleInfo
+  , formatParticleInfoOld
   ) where
 
 import Control.Applicative 
@@ -28,6 +31,8 @@ import Foreign.Marshal.Array
 import System.IO.Unsafe
 import Text.Printf
 --
+import HEP.Util.Formatter.Fortran
+-- 
 import HEP.Parser.LHE.Type
 import HEP.Parser.LHE.Formatter.Internal
 
@@ -64,8 +69,34 @@ formatLHEvent (LHEvent einfo pinfos) =
       pstrs = map formatParticleInfo pinfos
   in  intercalate "\n" (estr:pstrs)
 
-formatEventInfo :: EventInfo -> String 
-formatEventInfo einfo =
+
+formatEventInfo :: EventInfo -> String
+formatEventInfo EvInfo {..} = 
+  fformats [ P (I 2) nup 
+           , P (I 4) idprup 
+           , P (E 15 7) xwgtup
+           , P (E 15 7) scalup
+           , P (E 15 7) aqedup
+           , P (E 15 7) aqcdup ]
+
+-- | using old fortran 
+formatParticleInfo :: PtlInfo -> String 
+formatParticleInfo PtlInfo {..} = 
+  let fmt2 f (a,b) = [P f a,P f b] 
+      fmt5 f (a,b,c,d,e) = [P f a,P f b,P f c,P f d,P f e] 
+  in fformats $    [ P (I 9) idup
+                   , P (I 5) istup ] 
+                ++ fmt2 (I 5) mothup  
+                ++ fmt2 (I 5) icolup 
+                ++ fmt5 (E 19 11) pup
+                ++ [ P (F 3 0) vtimup
+                   , P (F 4 0) spinup ]  
+ 
+
+
+-- | using old fortran
+formatEventInfoOld :: EventInfo -> String 
+formatEventInfoOld einfo =
   let cstr = c_formatEventInfo <$> fromIntegral.nup
                                <*> fromIntegral.idprup
                                <*> realToFrac.xwgtup
@@ -74,9 +105,9 @@ formatEventInfo einfo =
                                <*> realToFrac.aqcdup $ einfo
   in  unsafePerformIO $ peekCString cstr
   
-
-formatParticleInfo :: PtlInfo -> String 
-formatParticleInfo pinfo = 
+-- | using old fortran 
+formatParticleInfoOld :: PtlInfo -> String 
+formatParticleInfoOld pinfo = 
   let tuple2lst (a,b) = [a,b]
       tuple5lst (a,b,c,d,e) = [a,b,c,d,e] 
       lstToCPtr f = unsafePerformIO . newArray . (map f) 
