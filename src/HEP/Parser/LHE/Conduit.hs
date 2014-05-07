@@ -6,7 +6,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      : HEP.Parser.LHE.Conduit
--- Copyright   : (c) 2010-2013 Ian-Woo Kim
+-- Copyright   : (c) 2010-2014 Ian-Woo Kim
 --
 -- License     : GPL-3
 -- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
@@ -20,14 +20,17 @@
 module HEP.Parser.LHE.Conduit where
 
 import           Control.Exception
+import           Control.Monad.Base (MonadBase)
+import           Control.Monad.Catch
 import           Control.Monad.IO.Class
+import           Control.Monad.Primitive (PrimMonad)
 import           Data.Conduit as C
 import           Data.Conduit.List as CL
 import           Data.Conduit.Util.Control as CU
 import qualified Data.Text as T
 import           Data.Typeable
 import           Data.XML.Types
-import           Text.XML.Stream.Render
+import           Text.XML.Stream.Render -- (renderBuilder)
 -- 
 import           HEP.Parser.LHE.Type
 import           HEP.Parser.LHE.Text
@@ -57,8 +60,8 @@ parseSingleEvent :: (MonadThrow m) => [Event] -> m LHEvent
 parseSingleEvent ((EventContent content):_)  =
   case content of 
     ContentText txt -> return  (getEvent txt)
-    _ -> monadThrow (ParseEventException "cannot parse event") 
-parseSingleEvent _ = monadThrow (ParseEventException "cannot parse event")
+    _ -> throw (ParseEventException "cannot parse event") 
+parseSingleEvent _ = throw (ParseEventException "cannot parse event")
 
 -- | 
 chunkLHEvent :: Monad m => Conduit Event m [Event] 
@@ -84,8 +87,9 @@ parseLHEHeader :: (Monad m) => Conduit Event m Event
 parseLHEHeader = CU.takeWhile (not.isEventStart)
 
 -- | 
-textLHEHeader :: (MonadIO m, MonadThrow m, MonadUnsafeIO m) => Sink Event m [T.Text]
+textLHEHeader :: (MonadIO m, MonadThrow m, MonadBase base m, PrimMonad base) => Sink Event m [T.Text]
 textLHEHeader = parseLHEHeader =$ renderText def =$ CL.consume 
   
-  
+-- because xml-conduit is not compatible with very    
+
 
