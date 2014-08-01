@@ -1,5 +1,5 @@
 Name:		LHEParser
-Version:	0.999
+Version:	0.999.0
 Synopsis:	Les Houches Event file parser
 Description: 	Les Houches Event file format parser
 License: 	BSD3
@@ -9,9 +9,9 @@ Maintainer: 	Ian-Woo Kim <ianwookim@gmail.com>
 Build-Type:     Simple
 cabal-version:  >=1.6
 Extra-source-files: Config.hs
-                    fsrc/fformatter.f
-                    csrc/formatter.h                   
-                    csrc/cformatter.h
+                    -- fsrc/fformatter.f
+                    -- csrc/formatter.h                   
+                    -- csrc/cformatter.h
                     
 Library
   hs-source-dirs: src
@@ -40,10 +40,10 @@ Library
                     -- HEP.Parser.LHE.Formatter.Internal
                     HEP.Parser.LHE.Text
                     HEP.Parser.LHE.Type 
-  Include-dirs:     csrc 
-  Install-includes: 
-                    cformatter.h
+  -- Include-dirs:     csrc 
+  -- Install-includes: 
+                    -- cformatter.h
                     -- fformatter.h
-  C-sources:        csrc/cformatter.c
-  extra-libraries:  gfortran
+  -- C-sources:     csrc/cformatter.c
+  -- extra-libraries:  gfortran
 
