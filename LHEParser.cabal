@@ -41,8 +41,9 @@ Library
                     HEP.Parser.LHE.Text
                     HEP.Parser.LHE.Type 
   Include-dirs:     csrc 
-  Install-includes: fformatter.h
+  Install-includes: 
                     cformatter.h
+                    -- fformatter.h
   C-sources:        csrc/cformatter.c
   extra-libraries:  gfortran
 
