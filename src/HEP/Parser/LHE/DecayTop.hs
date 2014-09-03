@@ -85,32 +85,34 @@ mkIntTreeWkr info (IntTree cr dmap)
         (newm1,newm2) = mothup info
         updtr ns os = ns ++ os 
 
+{- 
 -- | 
-matchDecayTopAndGet4Momentum :: DecayTop (i,PDGID) -> DecayTop PtlIDInfo -> Maybe (DecayTop (i,PtlIDInfo)) 
-matchDecayTopAndGet4Momentum (Terminal (mid,pid)) (Terminal pinfo) = do
-    guard (pid == pdgid pinfo)
+matchDecayTop1 :: (GetPDGID a) => DecayTop (i,PDGID) -> DecayTop a -> Maybe (DecayTop (i,a)) 
+matchDecayTop1 (Terminal (mid,pid)) (Terminal pinfo) = do
+    guard (pid == getPDGID pinfo)
     (return . Terminal) (mid,pinfo)
-matchDecayTopAndGet4Momentum (Decay ((mid,pid),xs)) (Decay (pinfo,ys)) = do
-    guard (pid == pdgid pinfo)
+matchDecayTop1 (Decay ((mid,pid),xs)) (Decay (pinfo,ys)) = do
+    guard (pid == getPDGID pinfo)
     let allxs = permutations xs 
         rs = flip map allxs $ \xs' -> do 
-               zs <- zipWithM matchDecayTopAndGet4Momentum xs' ys 
+               zs <- zipWithM matchDecayTop1 xs' ys 
                return (Decay ((mid,pinfo), zs))
     msum rs
-matchDecayTopAndGet4Momentum _ _ = Nothing 
+matchDecayTop1 _ _ = Nothing 
+-}
 
 -- |
-matchDecayTopGroupAndGet4Momentum :: DecayTop (i,[PDGID]) -> DecayTop PtlIDInfo -> Maybe (DecayTop (i,PtlIDInfo))
-matchDecayTopGroupAndGet4Momentum (Terminal (mid,pids)) (Terminal pinfo) = do
-    guard (pdgid pinfo `elem` pids) 
+matchDecayTop :: (GetPDGID a) => DecayTop (i,[PDGID]) -> DecayTop a -> Maybe (DecayTop (i,a))
+matchDecayTop (Terminal (mid,pids)) (Terminal pinfo) = do
+    guard (getPDGID pinfo `elem` pids) 
     (return . Terminal) (mid,pinfo)
-matchDecayTopGroupAndGet4Momentum (Decay ((mid,pids),xs)) (Decay (pinfo,ys)) = do 
-    guard (pdgid pinfo `elem` pids) 
+matchDecayTop (Decay ((mid,pids),xs)) (Decay (pinfo,ys)) = do 
+    guard (getPDGID pinfo `elem` pids) 
     let allxs = permutations xs
-        rs = flip map allxs $ \xs' -> do zs <- zipWithM matchDecayTopGroupAndGet4Momentum xs' ys 
+        rs = flip map allxs $ \xs' -> do zs <- zipWithM matchDecayTop xs' ys 
                                          return (Decay ((mid,pinfo), zs))
     msum rs
-matchDecayTopGroupAndGet4Momentum _ _ = Nothing 
+matchDecayTop _ _ = Nothing 
 
 -- | 
 getDecayTop :: LHEvent -> LHEventTop 

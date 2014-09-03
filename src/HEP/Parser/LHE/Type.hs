@@ -4,6 +4,7 @@
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -37,21 +38,17 @@ data LHEvent = LHEvent EventInfo [PtlInfo]
                deriving Show
 
 -- |
-
 type PtlID = Int 
 
 -- | 
-
 class IDable a  where 
   idee :: a -> Int
 
 -- | 
-
 instance IDable PtlInfo where
   idee = ptlid
 
 -- |
-
 data EventInfo = EvInfo { 
   nup    :: Int, 
   idprup :: Int, 
@@ -62,7 +59,6 @@ data EventInfo = EvInfo {
   } deriving Show
 
 -- | reference : <http://lcgapp.cern.ch/project/docs/lhef5.pdf>
-
 data PtlInfo   = PtlInfo {
   ptlid  :: PtlID, 
   idup   :: Int, 
@@ -75,7 +71,6 @@ data PtlInfo   = PtlInfo {
   } deriving Show
 
 -- | 
-
 emptyPtlInfo :: PtlInfo
 emptyPtlInfo = PtlInfo { ptlid = 0
                        , idup  = 0
@@ -160,6 +155,15 @@ data PtlIDInfo = PIDInfo {
   pdgid :: PDGID,  
   ptlinfo :: PtlInfo
 } deriving Show
+
+class GetPDGID a where
+  getPDGID :: a -> PDGID
+
+instance GetPDGID PDGID where
+  getPDGID = id
+
+instance GetPDGID PtlIDInfo where
+  getPDGID = pdgid
 
 -- | 
 {-
