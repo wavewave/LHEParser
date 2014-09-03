@@ -1,7 +1,9 @@
+{-# LANGUAGE TupleSections #-}
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      : HEP.Parser.LHE.DecayTop
--- Copyright   : (c) 2010-2013 Ian-Woo Kim
+-- Copyright   : (c) 2010-2014 Ian-Woo Kim
 --
 -- License     : GPL-3
 -- Maintainer  : Ian-Woo Kim <ianwookim@gmail.com>
@@ -84,29 +86,29 @@ mkIntTreeWkr info (IntTree cr dmap)
         updtr ns os = ns ++ os 
 
 -- | 
-matchDecayTopAndGet4Momentum :: DecayTop PDGID -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
-matchDecayTopAndGet4Momentum (Terminal pid) (Terminal pinfo) = do
+matchDecayTopAndGet4Momentum :: DecayTop (i,PDGID) -> DecayTop PtlIDInfo -> Maybe (DecayTop (i,PtlIDInfo)) 
+matchDecayTopAndGet4Momentum (Terminal (mid,pid)) (Terminal pinfo) = do
     guard (pid == pdgid pinfo)
-    return . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
-matchDecayTopAndGet4Momentum (Decay (pid,xs)) (Decay (pinfo,ys)) = do
+    (return . Terminal) (mid,pinfo)
+matchDecayTopAndGet4Momentum (Decay ((mid,pid),xs)) (Decay (pinfo,ys)) = do
     guard (pid == pdgid pinfo)
     let allxs = permutations xs 
         rs = flip map allxs $ \xs' -> do 
                zs <- zipWithM matchDecayTopAndGet4Momentum xs' ys 
-               return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
+               return (Decay ((mid,pinfo), zs))
     msum rs
 matchDecayTopAndGet4Momentum _ _ = Nothing 
 
 -- |
-matchDecayTopGroupAndGet4Momentum :: DecayTop [PDGID] -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
-matchDecayTopGroupAndGet4Momentum (Terminal pids) (Terminal pinfo) = do
+matchDecayTopGroupAndGet4Momentum :: DecayTop (i,[PDGID]) -> DecayTop PtlIDInfo -> Maybe (DecayTop (i,PtlIDInfo))
+matchDecayTopGroupAndGet4Momentum (Terminal (mid,pids)) (Terminal pinfo) = do
     guard (pdgid pinfo `elem` pids) 
-    (return . Terminal . pupTo4mom . pup . ptlinfo) pinfo
-matchDecayTopGroupAndGet4Momentum (Decay (pids,xs)) (Decay (pinfo,ys)) = do 
+    (return . Terminal) (mid,pinfo)
+matchDecayTopGroupAndGet4Momentum (Decay ((mid,pids),xs)) (Decay (pinfo,ys)) = do 
     guard (pdgid pinfo `elem` pids) 
     let allxs = permutations xs
         rs = flip map allxs $ \xs' -> do zs <- zipWithM matchDecayTopGroupAndGet4Momentum xs' ys 
-                                         return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
+                                         return (Decay ((mid,pinfo), zs))
     msum rs
 matchDecayTopGroupAndGet4Momentum _ _ = Nothing 
 

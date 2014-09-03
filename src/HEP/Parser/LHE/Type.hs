@@ -1,4 +1,9 @@
-{-# LANGUAGE GADTs, EmptyDataDecls #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFoldable #-}
+{-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -18,8 +23,11 @@
 module HEP.Parser.LHE.Type where
 
 import           Control.Monad.State
-import qualified Data.Map as M
 import qualified Data.ByteString as B
+import           Data.Foldable
+import           Data.Functor
+import           Data.Traversable
+import qualified Data.Map as M
 --
 import           HEP.Util.Functions
 
@@ -154,11 +162,11 @@ data PtlIDInfo = PIDInfo {
 } deriving Show
 
 -- | 
-
+{-
 instance Functor (DecayTop) where
   fmap f (Decay (x, xs)) = Decay ((f x), map (fmap f) xs) 
   fmap f (Terminal x)    = Terminal (f x)
-
+-}
 -- | 
 
 instance (Show a) => Show (DecayTop a) where
@@ -198,3 +206,9 @@ data LHEventTop = LHEventTop { lhet_ev :: LHEvent
                              , lhet_dtops :: [DecayTop PtlIDInfo]
                              } 
                 deriving (Show)
+
+deriving instance Functor DecayTop
+
+deriving instance Foldable DecayTop
+
+deriving instance Traversable DecayTop
