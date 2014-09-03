@@ -19,6 +19,7 @@ import           Data.Conduit
 import qualified Data.Conduit.List as CL
 import           Data.List hiding (map)
 import qualified Data.Map as M
+-- import           Data.Traversable (for)
 -- from hep-platform 
 import           HEP.Util.Functions
 -- from this package 
@@ -84,29 +85,33 @@ mkIntTreeWkr info (IntTree cr dmap)
 
 -- | 
 matchDecayTopAndGet4Momentum :: DecayTop PDGID -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
-matchDecayTopAndGet4Momentum (Terminal pid) (Terminal pinfo) 
-  | pid == pdgid pinfo = Just . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
-  | otherwise = Nothing
-matchDecayTopAndGet4Momentum (Decay (pid,xs)) (Decay (pinfo,ys)) 
-  | pid == pdgid pinfo = do zs <- zipWithM matchDecayTopAndGet4Momentum xs ys 
-                            return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
-  | otherwise = Nothing
+matchDecayTopAndGet4Momentum (Terminal pid) (Terminal pinfo) = do
+    guard (pid == pdgid pinfo)
+    return . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
+matchDecayTopAndGet4Momentum (Decay (pid,xs)) (Decay (pinfo,ys)) = do
+    guard (pid == pdgid pinfo)
+    let allxs = permutations xs 
+        rs = flip map allxs $ \xs' -> do 
+               zs <- zipWithM matchDecayTopAndGet4Momentum xs' ys 
+               return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
+    msum rs
 matchDecayTopAndGet4Momentum _ _ = Nothing 
 
 -- |
 matchDecayTopGroupAndGet4Momentum :: DecayTop [PDGID] -> DecayTop PtlIDInfo -> Maybe (DecayTop FourMomentum) 
-matchDecayTopGroupAndGet4Momentum (Terminal pids) (Terminal pinfo) =
-  if (pdgid pinfo `elem` pids) then Just . Terminal . pupTo4mom . pup . ptlinfo $ pinfo
-                               else Nothing
-matchDecayTopGroupAndGet4Momentum (Decay (pids,xs)) (Decay (pinfo,ys)) = 
-  if (pdgid pinfo `elem` pids) then do zs <- zipWithM matchDecayTopGroupAndGet4Momentum xs ys 
-                                       return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
-                               else Nothing
+matchDecayTopGroupAndGet4Momentum (Terminal pids) (Terminal pinfo) = do
+    guard (pdgid pinfo `elem` pids) 
+    (return . Terminal . pupTo4mom . pup . ptlinfo) pinfo
+matchDecayTopGroupAndGet4Momentum (Decay (pids,xs)) (Decay (pinfo,ys)) = do 
+    guard (pdgid pinfo `elem` pids) 
+    let allxs = permutations xs
+        rs = flip map allxs $ \xs' -> do zs <- zipWithM matchDecayTopGroupAndGet4Momentum xs' ys 
+                                         return (Decay ((pupTo4mom . pup. ptlinfo) pinfo, zs))
+    msum rs
 matchDecayTopGroupAndGet4Momentum _ _ = Nothing 
 
 -- | 
 getDecayTop :: LHEvent -> LHEventTop 
-               --  -> (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])
 getDecayTop ev@(LHEvent _einfo pinfos) = 
   let pmap = M.fromList (Prelude.map (\x->(idee x,x)) pinfos)
       dtops = mkFullDecayTop (mkIntTree pinfos)
@@ -115,16 +120,11 @@ getDecayTop ev@(LHEvent _einfo pinfos) =
   
 
 -- | 
-decayTopConduit :: (Monad m) => 
-                   Conduit LHEvent m LHEventTop
-                   -- (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]) 
+decayTopConduit :: (Monad m) => Conduit LHEvent m LHEventTop
 decayTopConduit = CL.map getDecayTop
 
 
 -- | make ordered decay topology from unordered decaytop
-ordDecayTopConduit :: Monad m => 
-                      Conduit LHEventTop m LHEventTop 
-                              -- (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo]) m 
-                              -- (LHEvent,PtlInfoMap,[DecayTop PtlIDInfo])
+ordDecayTopConduit :: Monad m => Conduit LHEventTop m LHEventTop 
 ordDecayTopConduit = 
     CL.map (\(LHEventTop a b cs) -> LHEventTop a b (fmap mkOrdDecayTop cs))

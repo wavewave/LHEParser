@@ -1,5 +1,5 @@
 Name:		LHEParser
-Version:	0.999.0
+Version:	0.999.1
 Synopsis:	Les Houches Event file parser
 Description: 	Les Houches Event file format parser
 License: 	BSD3
@@ -27,6 +27,7 @@ Library
                   exceptions,
                   HEPUtil>=0.999,
                   mtl > 2,
+                  -- permutation,
                   primitive,
                   text >= 0.11, 
                   transformers >= 0.3, 
